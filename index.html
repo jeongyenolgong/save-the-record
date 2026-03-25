@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Save the Record</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#FFFFFF;--accent:#FFD700;--accent2:#FFC107;--text:#222222;--red:#E53935;--green:#43A047;--gray:#BDBDBD;--light:#F5F5F5;--border:#222222;}
+body{font-family:'DotGothic16',monospace;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+.pixel-font{font-family:'Press Start 2P',monospace;}
+.container{max-width:640px;margin:0 auto;padding:16px;min-height:100vh;}
+button{font-family:'DotGothic16',monospace;cursor:pointer;border:3px solid var(--border);background:var(--bg);color:var(--text);padding:10px 16px;font-size:15px;transition:background 0.1s;}
+button:hover{background:var(--accent);}
+button:active{transform:translate(2px,2px);}
+input{font-family:'DotGothic16',monospace;border:3px solid var(--border);padding:8px 12px;font-size:16px;outline:none;background:var(--bg);}
+input:focus{border-color:var(--accent);}
+.hidden{display:none!important;}
+
+/* LOGIN */
+#login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;gap:20px;}
+#login h1{font-family:'Press Start 2P',monospace;font-size:clamp(18px,5vw,32px);letter-spacing:2px;line-height:1.6;}
+#login .subtitle{font-size:18px;color:#555;margin-bottom:16px;overflow:hidden;white-space:nowrap;width:100%;max-width:400px;}
+#login .subtitle .marquee{display:inline-block;animation:marquee 6s linear infinite;}
+@keyframes marquee{0%{transform:translateX(100%);}100%{transform:translateX(-100%);}}
+#login input{width:240px;text-align:center;font-size:18px;}
+#login .error{color:var(--red);font-size:14px;min-height:20px;}
+#login button{font-size:16px;padding:12px 32px;background:var(--accent);font-weight:bold;}
+.cursor-blink::after{content:'_';animation:blink 0.7s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+/* TOP BAR */
+.top-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:3px solid var(--border);margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+.top-bar .level{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--accent2);}
+.top-bar .count{font-size:14px;}
+.back-btn{font-size:14px;padding:6px 12px;background:var(--light);}
+
+/* CATEGORIES */
+#categories .greeting{font-size:16px;margin-bottom:16px;padding:12px;border:3px solid var(--accent);background:#FFFDE7;}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+@media(max-width:420px){.cat-grid{grid-template-columns:1fr;}}
+.cat-btn{text-align:left;padding:14px;font-size:14px;line-height:1.5;position:relative;}
+.cat-btn .cat-count{font-size:12px;color:#777;margin-top:4px;}
+.cat-btn.completed{border-color:var(--green);background:#E8F5E9;}
+.cat-btn.completed::after{content:'\2605';position:absolute;top:6px;right:8px;color:var(--accent);font-size:16px;}
+
+/* BADGES */
+.badges-section{margin-top:16px;padding:12px;border:3px solid var(--border);}
+.badges-section h3{font-family:'Press Start 2P',monospace;font-size:10px;margin-bottom:10px;}
+.badge-list{display:flex;flex-wrap:wrap;gap:6px;}
+.badge-item{font-size:12px;padding:4px 8px;border:2px solid var(--gray);color:var(--gray);}
+.badge-item.earned{border-color:var(--accent);color:var(--text);background:#FFFDE7;}
+
+/* HERITAGE LIST */
+.heritage-list{display:flex;flex-direction:column;gap:8px;}
+.heritage-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border:3px solid var(--border);font-size:14px;}
+.heritage-item:hover{background:var(--accent);cursor:pointer;}
+.heritage-item .check{color:var(--green);font-size:18px;min-width:24px;text-align:center;}
+.heritage-item .pending{color:var(--gray);font-size:18px;min-width:24px;text-align:center;}
+.heritage-item .info{flex:1;}
+.heritage-item .h-name{font-weight:bold;}
+.heritage-item .h-meta{font-size:12px;color:#666;margin-top:2px;}
+
+/* REPORT */
+.report-header{padding:12px;border:3px solid var(--accent);background:#FFFDE7;margin-bottom:16px;}
+.report-header h2{font-size:18px;margin-bottom:6px;}
+.report-header .meta{font-size:13px;color:#555;}
+.report-progress{font-family:'Press Start 2P',monospace;font-size:10px;text-align:right;margin-bottom:12px;color:var(--accent2);}
+.inv-list{display:flex;flex-direction:column;gap:10px;}
+.inv-item{border:3px solid var(--border);padding:12px;}
+.inv-item.completed{border-color:var(--green);}
+.inv-label{font-weight:bold;font-size:15px;margin-bottom:2px;display:flex;align-items:center;gap:6px;}
+.inv-label .status-icon{font-size:14px;}
+.inv-sublabel{font-size:12px;color:#777;margin-bottom:8px;}
+.inv-content{font-size:14px;line-height:1.7;margin-top:8px;white-space:pre-wrap;}
+.inv-connection{margin-top:10px;padding:10px;background:#FFFDE7;border:2px solid var(--accent);font-size:13px;line-height:1.6;}
+.inv-connection .conn-title{font-weight:bold;color:var(--accent2);margin-bottom:4px;font-size:12px;}
+.code-input-area{margin-top:8px;display:flex;gap:8px;align-items:center;}
+.digit-box{width:44px;height:50px;text-align:center;font-size:16px;font-family:'Press Start 2P',monospace;border:3px solid var(--border);}
+.digit-box:focus{border-color:var(--accent);background:#FFFDE7;}
+.code-submit{padding:10px 16px;font-size:14px;background:var(--accent);font-weight:bold;}
+.code-error{color:var(--red);font-size:12px;margin-top:4px;min-height:18px;}
+.locked-msg{color:var(--gray);font-size:13px;margin-top:4px;}
+
+/* TOAST */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border:3px solid var(--border);font-size:14px;z-index:1000;animation:toastIn 0.3s;max-width:90vw;text-align:center;}
+.toast.success{background:#E8F5E9;border-color:var(--green);}
+.toast.error{background:#FFEBEE;border-color:var(--red);}
+.toast.level-up{background:#FFFDE7;border-color:var(--accent);font-family:'Press Start 2P',monospace;font-size:12px;}
+.toast.badge-earned{background:#FFFDE7;border-color:var(--accent);}
+@keyframes toastIn{from{opacity:0;top:0;}to{opacity:1;top:20px;}}
+
+/* SHAKE */
+@keyframes shake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-6px);}40%,80%{transform:translateX(6px);}}
+.shake{animation:shake 0.4s;}
+
+/* OVERLAY */
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:2000;}
+.overlay-box{background:var(--bg);border:4px solid var(--accent);padding:32px;text-align:center;max-width:360px;width:90%;}
+.overlay-box h2{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--accent2);margin-bottom:16px;}
+.overlay-box p{font-size:15px;line-height:1.6;margin-bottom:16px;}
+.overlay-box button{font-size:14px;padding:10px 24px;}
+
+/* COMPLETE OVERLAY */
+.complete-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:2500;}
+.complete-box{background:var(--bg);border:4px solid var(--accent);padding:24px;text-align:center;max-width:400px;width:92%;max-height:90vh;overflow-y:auto;}
+.complete-box h2{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--accent2);margin-bottom:16px;line-height:1.6;}
+.complete-img{width:100%;max-height:240px;object-fit:contain;border:3px solid var(--border);margin-bottom:14px;background:var(--light);}
+.complete-name{font-size:20px;font-weight:bold;margin-bottom:6px;}
+.complete-meta{font-size:14px;color:#555;margin-bottom:6px;}
+.complete-source{font-size:10px;color:var(--gray);margin-bottom:16px;}
+.complete-box button{font-size:15px;padding:12px 32px;background:var(--accent);font-weight:bold;}
+
+/* STARS */
+.stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3000;}
+.star{position:absolute;font-size:24px;animation:starFall 1s forwards;}
+@keyframes starFall{0%{opacity:1;transform:scale(0) rotate(0deg);}50%{opacity:1;transform:scale(1.2) rotate(180deg);}100%{opacity:0;transform:scale(0.5) rotate(360deg) translateY(60px);}}
+
+/* CELEBRATION */
+.celebration{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3000;}
+.confetti{position:absolute;width:8px;height:8px;animation:confettiFall 1.5s forwards;}
+@keyframes confettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(100vh) rotate(720deg);}}
+
+/* TYPEWRITER */
+@keyframes typeChar{from{opacity:0;}to{opacity:1;}}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-track{background:var(--light);}
+::-webkit-scrollbar-thumb{background:var(--gray);border:2px solid var(--light);}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- LOGIN SCREEN -->
+<div id="login">
+  <h1 class="pixel-font">Save the<br>Record</h1>
+  <div class="subtitle"><span class="marquee">기록을 저장하라. 기록을 구하라.</span></div>
+  <input type="text" id="codeInput" placeholder="학급 코드 입력" maxlength="10" autocomplete="off">
+  <div class="error" id="loginError"></div>
+  <button onclick="tryLogin()">로그인</button>
+</div>
+
+<!-- CATEGORIES SCREEN -->
+<div id="categories" class="hidden">
+  <div class="top-bar">
+    <div>
+      <div class="level" id="levelDisplay"></div>
+      <div class="count" id="countDisplay"></div>
+    </div>
+    <button class="back-btn" onclick="logout()">로그아웃</button>
+  </div>
+  <div class="greeting">기록관님, 탐사할 지역을 선택하세요.</div>
+  <div class="cat-grid" id="catGrid"></div>
+  <div class="badges-section">
+    <h3>획득 뱃지</h3>
+    <div class="badge-list" id="badgeList"></div>
+  </div>
+</div>
+
+<!-- HERITAGE LIST SCREEN -->
+<div id="heritageList" class="hidden">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showCategories()">< 지역 선택</button>
+    <div class="level" id="levelDisplay2"></div>
+  </div>
+  <h2 id="catTitle" style="font-size:16px;margin-bottom:12px;"></h2>
+  <div class="heritage-list" id="hList"></div>
+</div>
+
+<!-- REPORT SCREEN -->
+<div id="report" class="hidden">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHeritage(currentCategory)">< 유산 목록</button>
+    <div class="report-progress" id="reportProgress"></div>
+  </div>
+  <div class="report-header">
+    <h2 id="reportName"></h2>
+    <div class="meta" id="reportMeta"></div>
+  </div>
+  <div class="inv-list" id="invList"></div>
+</div>
+
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay hidden" id="overlay">
+  <div class="overlay-box">
+    <h2 id="overlayTitle"></h2>
+    <p id="overlayMsg"></p>
+    <button onclick="hideOverlay()">확인</button>
+  </div>
+</div>
+
+<!-- COMPLETE OVERLAY -->
+<div class="complete-overlay hidden" id="completeOverlay">
+  <div class="complete-box">
+    <h2>★ 보고서 완성! ★</h2>
+    <img class="complete-img" id="completeImg" src="" alt="">
+    <div class="complete-name" id="completeName"></div>
+    <div class="complete-meta" id="completeMeta"></div>
+    <div class="complete-source" id="completeSource"></div>
+    <button onclick="closeComplete()">확인</button>
+  </div>
+</div>
+
+<!-- STARS CONTAINER -->
+<div class="stars hidden" id="starsContainer"></div>
+
+<script>
+// === GAME DATA ===
+const GAME_DATA = [{"no":1,"category":"한국 ① 역사와 전통","name":"훈민정음 해례본","country":"한국","year":1997,"difficulty":2,"items":{"생산 배경":{"method":"웹제공","code":"","content":"세종대왕은 문자를 갖지 못한 백성들의 의사소통 문제를 해결하기 위해 새로운 문자 체계를 창제하였다. 해례본은 단순한 문자 목록이 아니라, 각 글자의 창제 원리와 용법을 체계적으로 설명한 해설서로서 생산되었다. 1446년 음력 9월 상한에 반포되었으며, 정인지 등 집현전 학자들이 해례 부분의 집필에 참여하였다.","connection":"기록의 생산 목적과 배경이 기록 자체에 명시되어 있다는 점에서, 기록의 맥락(context) 정보가 완전하게 보존된 사례이다. 출처원칙의 관점에서 생산 기관과 생산 의도가 명확한 기록물이다."},"생산 방법":{"method":"웹제공","code":"","content":"세종대왕이 직접 문자를 설계하고, 집현전 학자 정인지·신숙주·성삼문 등이 해례(解例) 부분을 집필하였다. 목판 인쇄 방식으로 제작되었으며, 한문으로 작성된 해례와 한글 예시가 함께 수록되어 있다.","connection":"생산자(creator)가 명확히 식별되며, 생산 기술(목판 인쇄)과 기록 언어(한문·한글 병기)가 확인 가능하다. 이는 기록물의 진본성(authenticity) 검증에 핵심적인 요소이다."},"생존 이야기":{"method":"웹제공","code":"","content":"일제강점기와 한국전쟁이라는 두 차례의 대규모 위기를 겪었으며, 소장자가 전란 중에도 신변의 위험을 감수하며 보존하였다. 1940년 경상북도 안동에서 재발견되었고, 현재 전 세계에 단 1부만 남아 있는 유일본이다. 간송미술관에서 보존·관리해 왔다.","connection":"유일본(唯一本)의 보존 사례로서, 분산보존 전략이 적용되지 못한 경우의 위험성을 보여준다. 사본 제작과 매체변환을 통한 위험 분산이 기록물 보존의 핵심 과제임을 시사한다."},"기록문화적 가치":{"method":"카드","code":"168","content":"문자의 창제 원리를 기록한 해설서가 함께 전해지는 것은 전 세계에서 훈민정음이 유일하다. 언어학적·서지학적 가치가 탁월하며, 1997년 유네스코 세계기록유산에 등재되었다. 기록 자체가 지식의 민주화를 지향한 최초의 시도 중 하나이다.","connection":"기록물의 평가·선별 관점에서, 해당 기록의 고유성(uniqueness)과 대체 불가능성이 등재의 핵심 근거가 되었다. 기록물이 가진 사회적 영향력을 평가하는 기준을 제시하는 사례이다."},"현재 보존 방법":{"method":"카드","code":"199","content":"간송미술관(서울)에서 국보 제70호로 지정·보관하고 있다. 항온·항습 환경에서 보존되며, 고해상도 디지털 이미지가 제작되어 있다. 국립중앙박물관 등에서 특별전 형태로 공개된 바 있다.","connection":"유일본 보존의 관점에서, 원본 보존과 디지털화를 병행하는 매체변환(format migration) 전략이 적용되고 있다. 보존 환경(온·습도) 관리는 기록물관리기관의 핵심 업무이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"원본은 간송미술관에 소장되어 있으며 상시 공개되지 않고, 특별전을 통해 제한적으로 공개된다. 국립한글박물관 등에서 복제본을 상시 전시하고 있으며, 한국학중앙연구원 등에서 디지털 이미지를 열람할 수 있다.","connection":"기록정보서비스의 관점에서, 원본 보호와 이용자 접근권 사이의 균형을 보여주는 사례이다. 디지털 대리물(digital surrogate)을 통한 접근 확대가 기록관의 서비스 방향이다."}}},{"no":2,"category":"한국 ① 역사와 전통","name":"조선왕조실록","country":"한국","year":1997,"difficulty":2,"items":{"생산 배경":{"method":"웹제공","code":"","content":"조선왕조는 통치의 정당성과 역사적 교훈을 남기기 위해 왕대마다 실록을 편찬하는 제도를 운영하였다. 1392년 태조부터 1863년 철종까지 472년간 27대 왕의 기록을 총 1,893권 888책에 담았다. 실록 편찬은 선왕이 승하한 후 실록청을 설치하여 조직적으로 수행하였다.","connection":"기록 생산이 제도화되어 있었다는 점에서, 현대 기록관리의 기록 생산 의무제도와 유사한 구조를 가진다. 체계적인 기록 생산 체제는 기록관리 전문요원이 조직 내에서 구축해야 할 핵심 시스템이다."},"생산 방법":{"method":"카드","code":"139","content":"사관(史官)이 왕의 곁에서 모든 언행을 실시간으로 기록한 사초(史草)가 1차 자료이며, 이를 바탕으로 승정원일기·비변사등록 등을 참조하여 실록을 편찬하였다. 왕조차 실록의 내용을 열람할 수 없도록 하여 기록의 독립성을 보장하였다.","connection":"기록의 독립성(independence of records) 원칙이 제도적으로 보장된 대표적 사례이다. 기록 생산자에 대한 접근 통제는 기록의 신뢰성(reliability)과 무결성(integrity)을 확보하는 핵심 장치이다."},"생존 이야기":{"method":"웹제공","code":"","content":"임진왜란(1592) 때 전국 4개 사고(史庫) 중 3곳이 소실되었으나, 전주사고본 1부가 유일하게 보존되었다. 이후 전란의 교훈을 반영하여 5부를 제작하고 전국 5곳의 사고에 분산 보관하였다. 현재 서울대학교 규장각 등 여러 기관에 분산 소장되어 있다.","connection":"분산보존(distributed preservation)의 원칙이 실제 재난 경험으로부터 도출·적용된 역사적 사례이다. 현대 기록관리에서도 중요 기록물의 이중 보존(duplication)과 원격지 보관은 필수적 재난 대비 전략이다."},"기록문화적 가치":{"method":"카드","code":"273","content":"472년간 한 왕조의 역사를 빠짐없이 기록하고, 기록의 독립성을 제도적으로 보장한 사례는 세계적으로 유례가 없다. 정치·경제·사회·문화·자연현상까지 포괄하는 종합적 기록이며, 1997년 유네스코 세계기록유산에 등재되었다.","connection":"기록의 연속성(continuity)과 포괄성(comprehensiveness)이 평가 기준으로 작용한 사례이다. 기록의 가치 평가 시 기록의 범위, 기간, 독립성을 종합적으로 고려해야 함을 보여준다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"서울대학교 규장각한국학연구원, 한국학중앙연구원 장서각 등에 분산 소장되어 있다. 국보 제151호로 지정되어 있으며, 항온·항습 시설에서 보존된다. 전체 디지털화가 완료되어 온라인 원문 서비스가 제공되고 있다.","connection":"분산보존과 디지털화가 동시에 적용된 보존 사례이다. 원본의 물리적 보존과 디지털 접근성 확보를 병행하는 것은 현대 기록관리기관의 표준적 보존 전략이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"조선왕조실록 웹사이트(sillok.history.go.kr)에서 원문과 한글 번역을 무료로 열람할 수 있다. 원본은 규장각 등에서 연구 목적으로 제한적 열람이 가능하며, 디지털 이미지도 제공된다.","connection":"온라인 기록정보서비스의 모범 사례로, 원문 DB 구축과 번역을 통해 이용자 접근성을 극대화하였다. 기록물의 활용 가치를 높이기 위한 기록정보서비스 전략의 기준이 된다."}}},{"no":3,"category":"한국 ① 역사와 전통","name":"직지심체요절","country":"한국","year":2001,"difficulty":2,"items":{"생산 배경":{"method":"웹제공","code":"","content":"고려 말 백운화상 경한(1298~1374)이 선종 불교의 핵심 가르침을 정리하기 위해 편찬한 불교 서적이다. 1377년 충청북도 청주 흥덕사에서 금속활자를 사용하여 인쇄되었다. 불교 교육과 수행을 위한 실용적 목적에서 생산된 기록물이다.","connection":"기록의 생산 목적(종교적 교육)과 생산 기술(금속활자 인쇄)이 함께 확인되는 사례로, 기록의 맥락 정보 파악에 있어 출처원칙이 적용된다. 생산 기관(흥덕사)의 확인은 기록물의 출처 파악에 핵심적이다."},"생산 방법":{"method":"웹제공","code":"","content":"금속에 개별 글자를 주조하여 조판한 뒤 인쇄하는 금속활자 인쇄술로 제작되었다. 이는 구텐베르크의 42행 성경(1455년)보다 78년 앞선 기술이다. 백운화상이 편찬하고 제자들이 흥덕사에서 간행하였다.","connection":"기록 생산 기술의 혁신이 기록의 가치를 결정짓는 요소가 된 사례이다. 기록물의 물리적 특성(매체, 생산 기술)에 대한 이해는 기록물관리 전문요원의 필수 역량이다."},"생존 이야기":{"method":"카드","code":"204","content":"19세기 말 프랑스 초대 공사 콜랭 드 플랑시가 한국에서 수집하여 프랑스로 반출하였다. 현재 프랑스 국립도서관(BnF)에 하권 1책만 소장되어 있으며, 상권은 소재가 확인되지 않고 있다. 원 소장처인 한국이 아닌 해외에 보존되어 있는 상태이다.","connection":"기록물의 원래 소장 맥락(custodial history)이 단절된 사례로, 기록물 반환(repatriation) 문제와 관련된다. 기록물의 출처와 이관 경로 추적은 기록관리의 중요한 과제이다."},"기록문화적 가치":{"method":"카드","code":"103","content":"현존하는 세계 최고(最古)의 금속활자 인쇄물로서, 인류 인쇄 역사의 기원을 증명하는 기록물이다. 2001년 유네스코 세계기록유산에 등재되었으며, 유네스코는 이를 기념하여 매년 직지상을 수여하고 있다.","connection":"기록물의 역사적·기술적 고유성이 세계적 가치 평가의 핵심 기준이 된 사례이다. 평가·선별에서 기록물의 유일성(uniqueness)은 최우선 보존 대상 선정의 근거가 된다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"프랑스 국립도서관(BnF) 동양문헌실에 소장되어 있으며, 엄격한 보존 환경에서 관리된다. 한국의 청주고인쇄박물관에서는 관련 유물과 복제본을 전시하고 있다.","connection":"원본이 해외 기관에 소장된 경우, 국내 기록관리기관은 디지털 복제와 메타데이터 공유를 통해 기록에 대한 지적 통제(intellectual control)를 유지해야 한다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"프랑스 국립도서관의 디지털 아카이브 Gallica에서 고해상도 이미지를 열람할 수 있다. 청주고인쇄박물관에서 금속활자 인쇄 체험과 관련 전시를 상시 운영하고 있다.","connection":"해외 소장 기록물에 대한 디지털 접근은 국제 기록관리 협력의 중요한 영역이다. 기록정보서비스는 원본 소장 기관과의 협력을 통해 확대될 수 있다."}}},{"no":4,"category":"한국 ① 역사와 전통","name":"승정원일기","country":"한국","year":2001,"difficulty":3,"items":{"생산 배경":{"method":"카드","code":"141","content":"승정원은 조선시대 왕의 비서기관으로, 1623년부터 1910년까지 288년간 왕의 일상 업무와 국정 운영을 매일 기록하였다. 총 3,243책에 달하는 세계 최대 분량의 단일 기관 연속 기록물이다. 국정 운영의 투명성과 업무 연속성을 확보하기 위한 제도적 기록이었다.","connection":"단일 기관의 업무 기록이 제도적으로 생산·유지된 사례로, 현대 공공기관의 업무일지 및 전자기록 생산 의무와 직접적으로 비교된다. 기록 생산의 일상성과 연속성은 기록관리 체계의 근간이다."},"생산 방법":{"method":"카드","code":"128","content":"승정원의 주서(注書)가 왕의 접견, 대화 내용, 보고 사항, 날씨까지 하루도 빠짐없이 기록하였다. 이 기록은 조선왕조실록 편찬의 1차 원본 자료로 활용되었다. 총 2억 4,250만 자에 달하는 방대한 분량이다.","connection":"1차 자료(primary source)로서 2차 편찬물의 근거가 된다는 점에서, 기록물의 계층 구조와 원본·사본 관계에 대한 이해가 필요하다. 이는 기록물 정리·기술에서 출처원칙과 원질서 존중의 적용 사례이다."},"생존 이야기":{"method":"카드","code":"244","content":"임진왜란과 이괄의 난 등으로 인조 이전의 기록은 대부분 소실되었다. 현존하는 기록만으로도 2억 4,250만 자에 달하며, 조선왕조실록보다 방대한 분량이다. 한국전쟁 시에도 보존되어 현재까지 전해지고 있다.","connection":"부분 소실에도 불구하고 남은 기록의 양이 압도적이라는 점은, 원본 기록의 체계적 생산이 재난 후 복구에도 기여함을 보여준다. 기록의 연속성(continuity) 확보는 재난 대비의 근본적 방안이다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"단일 기관이 남긴 연속 기록으로서 세계 최대 분량이며, 조선시대 정치·사회·문화·기후까지 파악할 수 있는 백과사전적 기록이다. 2001년 유네스코 세계기록유산에 등재되었다.","connection":"기록의 분량, 연속성, 정보의 포괄성이 가치 평가의 핵심 기준이 된 사례이다. 기록물의 가치는 개별 건이 아니라 시리즈(series) 전체의 맥락에서 평가해야 함을 시사한다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"서울대학교 규장각한국학연구원에 국보 제303호로 소장되어 있다. 항온·항습 시설에서 보존되며, 디지털화 사업이 진행 중이다.","connection":"대량 기록물의 디지털화는 장기적 보존과 활용을 위한 필수 과제이다. 매체변환 시 원본의 물리적 특성과 내용 정보를 모두 보존하는 전략이 요구된다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"승정원일기 웹사이트(sjw.history.go.kr)에서 원문 이미지와 초서 판독문을 열람할 수 있다. 방대한 분량으로 인해 번역·탈초 작업이 지속적으로 진행되고 있다.","connection":"기록의 판독과 번역은 기록정보서비스의 핵심 영역이며, 이용자가 기록에 접근할 수 있는 지적 접근성(intellectual accessibility)을 확보하는 과정이다."}}},{"no":5,"category":"한국 ① 역사와 전통","name":"조선왕조 의궤","country":"한국","year":2007,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"조선왕실은 주요 국가 행사의 전 과정을 글과 그림으로 기록하여 후대에 전하고자 의궤를 제작하였다. 왕의 혼례, 장례, 궁궐 건축, 외교 행사 등 국가적 의례의 준비부터 완료까지를 상세히 담았다. 행사의 재현 가능성과 행정적 참고를 위한 실용적 목적의 기록물이었다.","connection":"업무 과정의 기록화(documentation)를 통해 재현 가능성을 확보한 사례로, 현대 기록관리에서의 업무 프로세스 기록과 동일한 원리이다. 기록의 증거적 가치(evidential value)가 생산 단계에서부터 의도된 기록물이다."},"생산 방법":{"method":"웹제공","code":"","content":"의궤청(儀軌廳)이라는 전담 조직을 설치하여 행사의 모든 과정을 기록하였다. 참여 인원, 사용 물품, 소요 비용, 행렬도(반차도) 등을 포함하며, 채색 삽화를 곁들여 시각적 기록도 함께 남겼다. 여러 부를 제작하여 왕실과 사고에 분산 보관하였다.","connection":"전담 조직에 의한 체계적 기록 생산과 복수 부본 제작은 현대의 기록물 생산 관리 체계와 정확히 일치한다. 시각 자료의 병행 기록은 다매체 기록관리(multimedia records management)의 선구적 사례이다."},"생존 이야기":{"method":"카드","code":"167","content":"일제강점기에 다수의 의궤가 일본으로 반출되었다. 2011년 프랑스에서 외규장각 의궤 297책이 145년 만에 한국으로 반환되었으며, 일본 궁내청 소장 의궤도 반환되었다. 현재 규장각과 한국학중앙연구원 등에 분산 소장되어 있다.","connection":"해외 반출 기록물의 환수(repatriation)는 기록관리 국제 협력의 중요한 과제이다. 기록물의 원래 맥락(original context) 복원은 기록관리 전문요원의 역할에 해당한다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"국가 행사를 이처럼 상세하고 체계적으로 기록한 사례는 세계적으로 유례가 없다. 행정·예술·기술사 연구의 1차 사료로서 탁월한 가치를 지니며, 2007년 유네스코 세계기록유산에 등재되었다.","connection":"기록의 상세성과 체계성이 가치 평가의 핵심 기준이 된 사례이다. 기록물의 정보적 가치(informational value)와 증거적 가치(evidential value)가 동시에 인정된 기록물이다."},"현재 보존 방법":{"method":"카드","code":"193","content":"서울대학교 규장각한국학연구원과 한국학중앙연구원 장서각에 분산 소장되어 있다. 고해상도 디지털 이미지가 제작되어 있으며, 보존 처리가 완료된 상태이다.","connection":"반환 기록물의 보존 처리와 기존 소장 기록물과의 통합 관리는 기록관리기관의 전문적 업무 영역이다. 분산 소장 기록물의 통합적 지적 통제가 필요하다."},"접근·열람 방법":{"method":"카드","code":"270","content":"규장각한국학연구원 웹사이트에서 의궤 원문 이미지를 열람할 수 있다. 국립중앙박물관과 국립고궁박물관에서 주요 의궤를 상설·특별 전시하고 있다.","connection":"온라인 원문 서비스와 오프라인 전시를 병행하는 다채널 기록정보서비스의 사례이다. 이용자의 접근 경로를 다양화하는 것은 기록관의 핵심 서비스 전략이다."}}},{"no":6,"category":"한국 ① 역사와 전통","name":"해인사 대장경판","country":"한국","year":2007,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"고려 고종 23년(1236)부터 38년(1251)까지 16년에 걸쳐 몽골 침입에 대한 호국 염원을 담아 대장경을 목판에 새겼다. 부처의 가호로 국난을 극복하고자 하는 종교적·정치적 목적에서 생산된 기록물이다. 이전 초조대장경이 몽골 침입으로 소실된 후 재제작된 것이다.","connection":"기록 생산의 사회적·정치적 맥락을 이해하는 것은 기록의 배경 분석에 필수적이다. 소실된 기록의 재생산이라는 점에서 기록 복구(recovery)와 재생산의 역사적 사례이다."},"생산 방법":{"method":"웹제공","code":"","content":"경판 81,258장에 5,200만 자 이상을 새겼으며, 오자와 탈자가 거의 없을 정도로 정교하게 제작되었다. 양면 각판 기술을 사용하였고, 목재의 방충·방부 처리 등 체계적인 보존 기술이 적용되었다.","connection":"대량 기록물의 품질 관리(quality control) 체계가 생산 단계에서부터 적용된 사례이다. 매체의 물리적 보존 처리는 기록물관리 전문요원의 보존(preservation) 업무와 직결된다."},"생존 이야기":{"method":"웹제공","code":"","content":"제작 이후 강화도에서 해인사로 이관되어 약 770년간 보존되어 왔다. 해인사 장경판전의 자연 통풍 구조가 목판의 장기 보존에 기여하였다. 한국전쟁 시 폭격 위기가 있었으나 김영환 대령의 판단으로 폭격이 중지되어 보존되었다.","connection":"장기 보존을 위한 보존 환경(preservation environment)의 중요성을 보여주는 대표적 사례이다. 자연 통풍 방식의 장경판전은 현대 항온·항습 보존 시설의 원형으로 평가된다."},"기록문화적 가치":{"method":"카드","code":"190","content":"81,258장의 목판에 새겨진 세계 최대 규모의 불교 경전 집성으로, 오자·탈자가 거의 없는 정교함이 높이 평가된다. 2007년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 규모, 정확성, 보존 상태가 가치 평가의 핵심 기준이 된 사례이다. 대량 기록물의 무결성(integrity) 유지가 기록관리의 중요한 성과 지표임을 보여준다."},"현재 보존 방법":{"method":"카드","code":"110","content":"경남 합천 해인사 장경판전에 원판 그대로 보관되어 있다. 장경판전 자체가 유네스코 세계유산으로 지정되어 있으며, 자연 통풍 시스템으로 목판의 보존 상태가 양호하다.","connection":"보존 시설(장경판전)과 기록물(대장경판)이 일체로 관리되는 사례로, 기록물의 보존 환경 관리가 기록관리의 핵심 업무임을 증명한다."},"접근·열람 방법":{"method":"카드","code":"261","content":"해인사를 방문하여 장경판전 외관을 관람할 수 있으나, 경판 원본의 직접 열람은 제한된다. 동국대학교 전자불전문화콘텐츠연구소에서 대장경 원문을 디지털로 제공하고 있다.","connection":"원본 보호를 위한 접근 제한과 디지털 대리물을 통한 정보 접근의 병행은 기록관리기관의 보편적 서비스 정책이다."}}},{"no":7,"category":"한국 ① 역사와 전통","name":"동의보감","country":"한국","year":2009,"difficulty":2,"items":{"생산 배경":{"method":"웹제공","code":"","content":"허준이 선조의 명을 받아 1596년부터 집필을 시작하여 1610년에 완성한 의학 백과사전이다. 임진왜란 중 의료 체계가 붕괴된 상황에서 의학 지식의 체계적 보존을 위해 생산되었다. 조선의 의학 지식과 중국 의학 문헌을 종합·정리하여 백성들이 쉽게 활용할 수 있도록 편찬하였다.","connection":"국가적 위기 상황에서 전문 지식을 기록으로 보존하려는 의도적 기록화(documentation) 사업의 사례이다. 기록의 생산 배경이 사회적 필요에 의해 결정된 경우로, 기록 생산의 맥락(context) 이해에 핵심적이다."},"생산 방법":{"method":"카드","code":"220","content":"허준이 개인 저술 형태로 집필하였으나, 왕실의 공식 지원을 받았다. 총 25편 25권으로 구성되며, 내경편·외형편·잡병편·탕액편·침구편의 체계적 분류를 갖추고 있다. 한글 약명 병기로 일반 백성의 접근성을 고려하였다.","connection":"지식의 분류 체계 설계는 기록물 분류(classification)의 원리와 동일하다. 이용자 접근성을 고려한 다국어 병기는 기록물 기술(description)에서의 접근점(access point) 설정과 유사하다."},"생존 이야기":{"method":"웹제공","code":"","content":"1613년 목판 인쇄 이후 여러 판본이 제작되어 동아시아 전역에 유통되었다. 일본과 중국에서도 번역·출판되어 동아시아 의학의 표준적 참고문헌으로 활용되었다. 다수의 판본이 현존하여 보존 상태가 양호하다.","connection":"다수의 판본 제작과 국제적 유통은 기록의 분산보존 효과를 자연스럽게 발생시킨 사례이다. 판본학(bibliography)에 대한 이해는 기록물관리 전문요원의 전문 역량이다."},"기록문화적 가치":{"method":"카드","code":"231","content":"동아시아 의학 지식을 집대성한 의학 백과사전으로, 의학사·약학사 연구의 핵심 자료이다. 2009년 유네스코 세계기록유산에 등재되었으며, 한의학의 과학적 체계를 증명하는 기록물이다.","connection":"전문 분야 지식을 체계적으로 기록한 기록물의 학술적 가치를 평가한 사례이다. 기록물의 정보적 가치(informational value) 평가에서 전문성과 체계성이 핵심 기준이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"국립중앙도서관, 한국학중앙연구원 등에 다양한 판본이 소장되어 있다. 원본 목판은 보물로 지정되어 보존되고 있으며, 디지털화가 완료되어 있다.","connection":"다양한 판본의 서지적 관리와 원본·이본(異本) 관계 파악은 기록물 정리·기술의 전문적 영역이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"한국고전번역원 한국고전종합DB에서 원문과 번역문을 열람할 수 있다. 허준박물관(서울 강서구)에서 관련 자료를 상시 전시하고 있다.","connection":"고전 기록물의 번역과 DB 구축은 기록정보서비스의 확장이며, 기록물의 활용도를 높이는 핵심 사업이다."}}},{"no":8,"category":"한국 ① 역사와 전통","name":"난중일기","country":"한국","year":2013,"difficulty":2,"items":{"생산 배경":{"method":"웹제공","code":"","content":"이순신 장군이 임진왜란(1592~1598) 기간 중 전장에서 직접 작성한 친필 일기이다. 1592년 1월 1일부터 1598년 11월 17일 노량해전 전날까지의 기록으로, 7년간의 전쟁 상황과 개인적 고뇌를 담고 있다. 공적 기록과 사적 감정이 혼재된 독특한 성격의 기록물이다.","connection":"공적 업무 기록과 사적 기록이 혼합된 기록물의 성격 분석은 기록 평가에서 중요한 과제이다. 기록 생산자의 직위와 기록의 맥락을 종합적으로 분석하는 것이 필요하다."},"생산 방법":{"method":"카드","code":"124","content":"이순신이 전장에서 직접 붓으로 작성한 친필 기록이다. 총 7권으로 구성되며, 날짜별로 전투 상황, 군사 동향, 날씨, 개인적 소회를 기록하였다. 원제는 난중일기가 아니라 임진일기 등 연도별 제목이었으며, 후대에 난중일기로 통칭되었다.","connection":"기록물의 원래 제목과 후대 부여 제목의 차이를 파악하는 것은 기록물 기술(archival description)에서 중요하다. 친필 기록의 진본성(authenticity) 확인은 기록관리의 핵심 업무이다."},"생존 이야기":{"method":"웹제공","code":"","content":"이순신 장군 후손가에서 대대로 보관해 왔으며, 일제강점기와 한국전쟁을 거치면서도 보존되었다. 일부 빠진 날짜가 있으나 전체적인 연속성이 유지되어 있다. 현재 아산 현충사에 보관되어 있다.","connection":"개인 기록물의 가문 전승은 사적 기록의 보존 경로(custodial history)를 보여주는 사례이다. 기록물의 이관 이력 추적은 기록관리 전문요원의 업무 영역이다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"전쟁 현장에서 지휘관이 직접 작성한 1차 기록으로, 군사사·해전사 연구의 핵심 사료이다. 공적 기록과 인간적 감정이 함께 담긴 독특한 기록물로, 2013년 유네스코 세계기록유산에 등재되었다.","connection":"1차 자료(primary source)로서의 증거적 가치와, 인간적 기록으로서의 정보적 가치가 동시에 인정된 사례이다. 기록의 다층적 가치 평가가 필요함을 보여준다."},"현재 보존 방법":{"method":"카드","code":"129","content":"아산 현충사 내 유물관에 국보 제76호로 보존되어 있다. 항온·항습 특수 보존 시설에서 관리되며, 고해상도 디지털 이미지가 제작되어 있다.","connection":"친필 기록물은 대체 불가능한 유일본으로, 원본 보존 환경의 관리가 최우선 과제이다. 디지털화를 통한 이용 대체물 제공은 원본 보호와 접근의 균형을 위한 전략이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"현충사 유물관에서 복제본 및 관련 전시를 상시 관람할 수 있다. 한국고전번역원에서 번역문을 열람할 수 있으며, 디지털 이미지가 공개되어 있다.","connection":"원본 보호를 위해 복제본 전시와 디지털 서비스를 병행하는 것은 기록관의 접근 정책(access policy)의 기본 원칙이다."}}},{"no":9,"category":"한국 ② 근현대","name":"국채보상운동 기록물","country":"한국","year":2017,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"1907년 대구에서 시작된 국채보상운동은 일제의 차관에 의한 경제적 예속을 국민의 자발적 모금으로 극복하고자 한 민간 주도의 경제 독립 운동이었다. 모금 명부, 신문 기사, 서신, 회계 장부 등 다양한 유형의 기록물이 생산되었다. 국민 개개인의 참여를 증명하는 풀뿌리 기록이라는 점이 특징적이다.","connection":"민간 기록(private records)의 체계적 수집과 관리의 중요성을 보여주는 사례이다. 기록의 생산 주체가 국가가 아닌 시민이라는 점에서, 민간 기록 아카이빙의 가치와 필요성을 시사한다."},"생산 방법":{"method":"카드","code":"177","content":"전국의 모금 참여자 명부, 의연금 영수증, 신문 보도 기사, 단체 간 서신, 회계 보고서 등 다양한 매체와 형식의 기록물로 구성되어 있다. 대한매일신보·황성신문 등 당시 언론 매체를 통해 운동이 확산되면서 관련 기록이 광범위하게 생산되었다.","connection":"다양한 출처와 형식의 기록물을 하나의 맥락으로 통합 관리하는 것은 기록물 정리의 핵심 과제이다. 출처원칙(respect des fonds)에 따라 각 생산 주체별로 기록을 관리하면서도 주제적 연계를 확보해야 한다."},"생존 이야기":{"method":"카드","code":"162","content":"일제강점기에 일본 당국의 탄압과 기록 은폐 시도에도 불구하고, 신문 기사와 개인 소장 문서를 통해 기록이 보존되었다. 해방 이후 학술 연구를 통해 기록물이 재발견되고 체계적으로 수집되었다.","connection":"분산된 기록물의 사후 수집과 통합은 기록관리의 중요한 업무이다. 식민 통치 시기의 기록 은폐와 복원은 기록의 진본성 확인과 맥락 복원의 과제를 수반한다."},"기록문화적 가치":{"method":"카드","code":"137","content":"국민이 자발적으로 참여한 경제 주권 운동의 기록으로, 시민 참여 민주주의의 원형을 보여준다. 2017년 유네스코 세계기록유산에 등재되었으며, 민간 주도 사회운동 기록의 가치를 국제적으로 인정받았다.","connection":"민간 기록물의 사회적·역사적 가치 평가 사례이다. 기록물의 가치는 생산 주체의 지위가 아니라 기록이 담고 있는 사회적 의미에 의해 결정될 수 있음을 보여준다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"국채보상운동기념관(대구)에 관련 기록물이 소장되어 있으며, 국가기록원과 국립중앙도서관 등에도 관련 자료가 분산 보존되어 있다. 디지털화가 진행되어 있다.","connection":"분산 소장 기록물의 통합적 관리를 위해 기관 간 협력과 통합 메타데이터 시스템 구축이 필요하다. 이는 기록관리 네트워크의 핵심 과제이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"국채보상운동기념관에서 관련 자료를 상시 전시하고 있다. 국가기록원 및 한국사데이터베이스에서 관련 기록물의 디지털 이미지를 열람할 수 있다.","connection":"여러 기관에 분산된 기록물에 대한 통합 검색 서비스 제공은 기록정보서비스의 발전 방향이다."}}},{"no":10,"category":"한국 ② 근현대","name":"5·18 민주화운동 기록물","country":"한국","year":2011,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"1980년 5월 18일부터 27일까지 광주에서 발생한 민주화운동 과정에서 생산된 기록물이다. 시민들의 항쟁, 계엄군의 진압, 이후 진상규명과 보상 과정에서 다양한 기록이 생산되었다. 국가 폭력에 대한 시민 저항의 전 과정을 증거하는 기록물이다.","connection":"국가 폭력과 시민 저항이라는 대립적 맥락에서 생산된 기록물은 다양한 관점의 기록을 포함한다. 기록의 다원적 출처(multiple provenance)를 이해하고 관리하는 것이 기록관리 전문요원의 역할이다."},"생산 방법":{"method":"웹제공","code":"","content":"시민 성명서, 사진, 영상, 군 작전 문서, 외신 보도, 피해자 증언, 재판 기록 등 다양한 유형과 매체의 기록물로 구성되어 있다. 시민·군·언론·사법부 등 복수의 생산 주체에 의해 생산되었다.","connection":"복수의 생산 주체와 다양한 매체로 구성된 기록물군(record group)의 통합 관리는 출처별 정리와 주제별 접근을 동시에 지원해야 하는 과제를 수반한다."},"생존 이야기":{"method":"카드","code":"205","content":"군사 정권 시기 진상 은폐 시도가 있었으나, 시민들이 사진·영상·증언을 개인적으로 보존하였다. 민주화 이후 진상규명위원회 활동을 통해 군 기밀문서 등이 공개되었으며, 체계적 수집이 이루어졌다.","connection":"권력에 의한 기록 은폐와 시민에 의한 기록 보존은 기록의 사회적 기능을 극명하게 보여준다. 비공개 기록의 공개 전환(declassification)은 기록관리의 중요한 정책 영역이다."},"기록문화적 가치":{"method":"카드","code":"248","content":"민주주의와 인권을 위한 시민 투쟁의 기록으로, 전 세계 민주화운동의 모범 사례로 평가된다. 2011년 유네스코 세계기록유산에 등재되었으며, 아시아 민주주의 발전사의 핵심 기록이다.","connection":"기록물의 사회적·정치적 가치가 평가의 핵심 기준이 된 사례이다. 인권 기록물의 보존은 기록관리의 사회적 책임(social responsibility)과 직결된다."},"현재 보존 방법":{"method":"카드","code":"260","content":"5·18민주화운동기록관(광주)에 핵심 기록물이 소장되어 있으며, 국가기록원, 육군본부 등에도 관련 기록이 분산 보존되어 있다. 5·18기념재단에서 구술 기록 수집 사업도 진행하고 있다.","connection":"구술 기록(oral records) 수집은 문서 기록을 보완하는 중요한 기록화 전략이다. 다양한 기관에 분산된 기록물의 통합적 지적 통제가 필요하다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"5·18민주화운동기록관에서 상시 전시와 열람 서비스를 제공하고 있다. 5·18기념재단 웹사이트와 국가기록원에서 디지털 기록물을 열람할 수 있다.","connection":"민주주의·인권 기록물에 대한 시민의 접근권 보장은 기록관리의 민주적 가치 실현이다. 기록정보서비스는 역사 교육과 시민 의식 향상에 기여해야 한다."}}},{"no":11,"category":"한국 ② 근현대","name":"4·19혁명 기록물","country":"한국","year":2023,"difficulty":4,"items":{"생산 배경":{"method":"카드","code":"211","content":"1960년 4월 19일 대한민국에서 이승만 정권의 부정선거에 항의하여 학생과 시민이 일으킨 민주혁명 과정에서 생산된 기록물이다. 시위 현장 사진, 성명서, 정부 문서, 언론 보도, 재판 기록 등이 포함된다. 시민 주도의 민주주의 실현 과정을 증거하는 기록이다.","connection":"민주주의 이행 과정의 기록화는 기록관리의 사회적 책임에 해당한다. 다양한 주체가 생산한 기록물의 수집과 통합 관리가 필요한 사례이다."},"생산 방법":{"method":"카드","code":"271","content":"학생 단체 성명서, 시위 현장 사진과 영상, 정부 발표문, 경찰 보고서, 언론 보도, 부상자·사망자 관련 문서 등 다양한 형태로 생산되었다. 당시 시민과 언론인이 현장에서 직접 촬영한 사진 기록이 중요한 비중을 차지한다.","connection":"현장 기록(field records)의 생산과 보존은 사건의 진실성을 증명하는 데 핵심적이다. 다매체 기록물의 통합 관리는 기록관리 전문요원의 전문적 역량을 요구한다."},"생존 이야기":{"method":"웹제공","code":"","content":"이후 군사 정권 시기를 거치면서 일부 기록이 은폐·훼손되었으나, 시민과 언론인의 개인 소장 자료를 통해 보존되었다. 민주화 이후 체계적 수집과 정리가 이루어졌다.","connection":"정권 변동에 따른 기록의 은폐와 복원 과정은 기록의 무결성(integrity) 보장이 정치적 환경에 영향을 받을 수 있음을 보여준다."},"기록문화적 가치":{"method":"카드","code":"176","content":"아시아 최초의 학생·시민 주도 민주혁명의 기록으로, 민주주의 발전사의 중요한 이정표이다. 2023년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 역사적 의의와 사회적 영향력이 가치 평가의 핵심 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"185","content":"국가기록원, 4·19혁명기념도서관, 민주화운동기념사업회 등에 분산 소장되어 있다. 디지털화 및 데이터베이스 구축이 진행되고 있다.","connection":"민주주의 관련 기록물의 체계적 수집과 보존은 국가 기록관리 체계의 중요한 영역이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"4·19혁명기념도서관(서울 강북구)에서 관련 자료를 열람할 수 있다. 국가기록원 웹사이트에서 디지털 자료를 검색·열람할 수 있다.","connection":"민주주의 기록물에 대한 시민 접근성 보장은 기록관의 공공 서비스 의무이다."}}},{"no":12,"category":"한국 ② 근현대","name":"KBS '이산가족을 찾습니다'","country":"한국","year":2015,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"1983년 6월 30일부터 11월 14일까지 138일간 KBS가 생방송으로 진행한 이산가족 찾기 프로그램에서 생산된 기록물이다. 한국전쟁으로 헤어진 이산가족들의 재회를 위해 방송 매체를 활용한 대규모 사회 프로젝트였다. 총 453시간 45분의 방송 분량이 기록되었다.","connection":"방송 기록물이 사회적 기능을 수행한 사례로, 시청각 기록물(audiovisual records)의 기록관리적 가치를 보여준다. 기록의 생산 목적이 사회적 필요에 직접 대응한 사례이다."},"생산 방법":{"method":"카드","code":"258","content":"KBS가 생방송 형태로 제작하였으며, 비디오테이프에 수록되었다. 이산가족 신청서 20,522건, 생방송 녹화 테이프 463개, 프로듀서 업무 수첩 등으로 구성되어 있다. 전화 교환 기록과 시청자 편지도 포함된다.","connection":"시청각 기록물과 문서 기록물의 통합 관리는 다매체 기록관리(multimedia records management)의 과제이다. 생방송 기록의 보존은 원본 매체의 기술적 특성에 대한 이해를 요구한다."},"생존 이야기":{"method":"웹제공","code":"","content":"비디오테이프의 물리적 열화에 대응하여 디지털 변환 작업이 수행되었다. KBS 아카이브에서 체계적으로 보존·관리해 왔으며, 원본 테이프와 디지털 파일을 병행 보존하고 있다.","connection":"시청각 기록물의 매체변환(format migration)은 기록의 장기 보존을 위한 필수 과정이다. 원본 매체의 기술적 노후화(technological obsolescence)에 대한 대응은 기록관리의 핵심 과제이다."},"기록문화적 가치":{"method":"카드","code":"247","content":"방송 매체를 통한 인도주의적 기록화 사업으로, 분단과 전쟁의 비극을 증언하는 기록물이다. 138일간 연속 생방송이라는 방송사적 기록이기도 하며, 2015년 유네스코 세계기록유산에 등재되었다.","connection":"시청각 기록물의 인도주의적·사회적 가치가 평가 기준이 된 사례이다. 기록물의 가치 평가는 매체의 특성이 아닌 기록이 담고 있는 사회적 의미에 기반해야 함을 보여준다."},"현재 보존 방법":{"method":"카드","code":"246","content":"KBS 미디어 아카이브에 원본 테이프와 디지털 변환 파일이 보존되어 있다. 이산가족 신청서 등 문서 기록물은 별도로 보존·관리되고 있다.","connection":"방송 기록물의 장기 보존은 매체변환 계획(migration plan)의 수립과 이행이 핵심이다. 디지털 보존(digital preservation) 전략의 적용이 필요한 대표적 사례이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"KBS 아카이브 웹사이트에서 일부 방송 영상을 시청할 수 있다. 이산가족정보통합시스템을 통해 관련 정보를 검색할 수 있다.","connection":"시청각 기록물의 온라인 서비스 제공은 기록정보서비스의 확장된 형태이다. 개인정보 보호와 공개 사이의 균형은 기록 접근 정책의 핵심 쟁점이다."}}},{"no":13,"category":"한국 ② 근현대","name":"산림녹화 기록물","country":"한국","year":2025,"difficulty":3,"items":{"생산 배경":{"method":"카드","code":"169","content":"1960~70년대 한국 정부가 추진한 국가적 산림녹화 사업의 전 과정을 기록한 문서이다. 한국전쟁 이후 황폐화된 산림을 복원하기 위한 정책 수립, 시행, 평가 과정이 담겨 있다. 세계적으로 유례없는 대규모 산림 복원 성공 사례의 증거 기록이다.","connection":"국가 정책의 수립부터 성과까지 전 과정이 기록된 사례로, 정책 기록(policy records)의 체계적 관리 모범이다. 기록이 정책 평가와 후속 사업의 근거가 되는 기록의 증거적 가치를 보여준다."},"생산 방법":{"method":"웹제공","code":"","content":"산림청, 내무부 등 관계 부처의 정책 문서, 사업 계획서, 실행 보고서, 통계 자료, 현장 사진 등으로 구성되어 있다. 중앙 정부와 지방 행정 기관, 마을 단위까지의 다층적 기록 체계를 갖추고 있다.","connection":"다층적 행정 기관에서 생산된 기록물의 계층적 관리는 기록물 분류 체계(classification scheme) 설계의 핵심 과제이다. 출처원칙에 따른 기관별 기록 관리가 요구된다."},"생존 이야기":{"method":"카드","code":"148","content":"정부 기록물로서 국가기록원 등 공공기관에서 체계적으로 보존되어 왔다. 행정 문서의 보존 기한 관리 체계에 따라 영구 보존 대상으로 분류되어 관리되고 있다.","connection":"공공기록물의 보존 기한 책정과 영구 보존 결정은 기록물 평가·선별의 핵심 업무이다. 체계적 기록관리 시스템이 기록의 장기 보존을 가능하게 한 사례이다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"전쟁으로 황폐화된 국토를 성공적으로 복원한 세계 유일의 산림녹화 성공 사례를 증명하는 기록이다. 개발도상국의 환경 복원 모델로 국제적 주목을 받고 있으며, 2025년 유네스코 세계기록유산에 등재되었다.","connection":"정책 기록물의 국제적 가치 평가 사례이다. 기록물이 타 국가의 정책 수립에 참고 자료로 활용될 수 있다는 점에서 기록의 2차적 활용 가치를 보여준다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"국가기록원 및 산림청 등에 소장되어 있다. 문서류와 사진·영상 자료가 체계적으로 분류·보존되어 있으며, 디지털화가 진행 중이다.","connection":"공공기록물의 체계적 보존은 국가기록관리 체계의 근간이며, 기록물관리기관의 핵심 기능이다."},"접근·열람 방법":{"method":"카드","code":"157","content":"국가기록원 웹사이트에서 관련 기록물을 검색·열람할 수 있다. 산림청 산림박물관에서 관련 전시를 관람할 수 있다.","connection":"공공기록물에 대한 시민의 정보 접근권 보장은 기록관리법의 핵심 원칙이며, 온라인 서비스를 통해 실현된다."}}},{"no":14,"category":"한국 ② 근현대","name":"제주4·3 기록물","country":"한국","year":2025,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"1947년부터 1954년까지 제주도에서 발생한 민간인 학살 사건과 관련된 기록물이다. 군경 작전 문서, 재판 기록, 피해자 증언, 진상조사 보고서 등이 포함된다. 국가 폭력의 진실을 밝히고 피해자의 명예를 회복하기 위한 기록화 과정에서 생산·수집되었다.","connection":"국가 폭력 피해 기록의 수집과 보존은 기록관리의 사회적 책임(social responsibility)에 해당한다. 진실과 화해를 위한 기록화는 기록관리의 중요한 가치이다."},"생산 방법":{"method":"웹제공","code":"","content":"군·경찰 작전 보고서, 군법회의 재판 기록, 수형자 명부, 피해자 및 유족 증언 녹취록, 진상조사위원회 보고서, 현장 사진 등으로 구성되어 있다. 가해 측과 피해 측 양쪽의 기록이 포함되어 있다.","connection":"대립적 관점의 기록물을 모두 수집·보존하는 것은 기록의 공정성과 완전성 확보에 필수적이다. 기록관리 전문요원은 특정 관점에 편향되지 않은 기록 수집 정책을 수립해야 한다."},"생존 이야기":{"method":"카드","code":"150","content":"오랜 기간 정치적 금기로 인해 관련 기록이 은폐·훼손되었으며, 피해자들도 증언을 꺼려왔다. 2000년 제주4·3특별법 제정 이후 진상조사와 체계적 기록 수집이 이루어졌다. 구술 기록 채록 사업이 지속적으로 진행되고 있다.","connection":"정치적 이유로 은폐된 기록의 복원과 수집은 기록관리의 진실 규명 기능을 보여준다. 구술 기록은 문서 기록의 공백을 보완하는 중요한 기록 유형이다."},"기록문화적 가치":{"method":"카드","code":"121","content":"국가 폭력의 진상을 증명하고 피해자의 명예를 회복하는 데 기여하는 기록물이다. 동아시아 냉전기 민간인 학살의 진실을 밝히는 국제적으로 중요한 기록이며, 2025년 유네스코 세계기록유산에 등재되었다.","connection":"인권 기록물의 보존은 기록관리의 윤리적 책임이다. 기록물이 역사적 진실 규명과 사회 정의 실현에 기여할 수 있음을 보여주는 사례이다."},"현재 보존 방법":{"method":"카드","code":"238","content":"제주4·3평화재단, 국가기록원, 제주도 등에 분산 소장되어 있다. 제주4·3평화기념관에서 관련 기록물을 보존·전시하고 있으며, 구술 기록 아카이브가 구축되어 있다.","connection":"피해 기록물의 보존은 해당 지역 사회와의 협력이 필수적이며, 지역 기록관(community archives)의 역할이 중요하다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"제주4·3평화기념관에서 상시 전시와 열람 서비스를 제공하고 있다. 제주4·3평화재단 웹사이트에서 관련 자료를 검색할 수 있으며, 연구 목적의 열람이 가능하다.","connection":"피해 기록물에 대한 접근은 개인정보 보호와 역사적 공개 가치 사이의 균형이 필요하다. 기록 접근 정책에서 피해자의 권리를 우선적으로 고려해야 한다."}}},{"no":15,"category":"유럽 ① 독일과 주변국","name":"구텐베르크 42행 성경","country":"독일","year":2001,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"1455년경 독일 마인츠에서 요하네스 구텐베르크가 금속활자 인쇄술을 활용하여 제작한 서양 최초의 금속활자 인쇄 성경이다. 각 페이지에 42행의 텍스트가 배치되어 42행 성경이라 불린다. 성경의 대량 복제를 통한 종교 지식의 보급이 생산 목적이었다.","connection":"기록 복제 기술의 혁신이 기록의 대량 생산과 유통을 가능하게 한 사례이다. 기록의 생산 기술 변화가 지식의 민주화에 미친 영향은 기록관리사적 관점에서 중요하다."},"생산 방법":{"method":"웹제공","code":"","content":"구텐베르크가 개발한 금속활자 주조 기술과 인쇄기를 사용하여 제작하였다. 약 180부가 인쇄되었으며, 양피지본과 종이본으로 나뉜다. 대형 포리오 판형에 고딕 서체로 인쇄하고 일부는 수작업으로 채색하였다.","connection":"동일한 내용의 복수 생산(multiple copies)은 기록의 분산보존 효과를 발생시켰다. 기록물의 물리적 특성(매체, 판형, 서체)에 대한 이해는 서지학적 기록관리의 기본이다."},"생존 이야기":{"method":"웹제공","code":"","content":"약 180부 중 현재 전 세계에 49부가 남아 있으며, 완본은 21부이다. 유럽 각지의 도서관, 대학, 교회 등에 분산 소장되어 있어 전란과 자연재해로부터 보호될 수 있었다.","connection":"복수 생산과 분산 소장이 기록의 장기 보존에 기여한 대표적 사례이다. 분산보존(distributed preservation)의 효과를 역사적으로 증명한다."},"기록문화적 가치":{"method":"카드","code":"268","content":"서양 금속활자 인쇄술의 시작을 상징하는 기록물로, 인쇄 혁명과 지식 민주화의 기원이다. 2001년 유네스코 세계기록유산에 등재되었으며, 인류 문명사의 전환점을 증명한다.","connection":"기록 기술(technology)의 혁신이 문명사적 가치를 지니는 사례이다. 기록물의 역사적·기술적 중요성이 가치 평가의 핵심 기준이 된다."},"현재 보존 방법":{"method":"카드","code":"142","content":"독일 마인츠 구텐베르크 박물관, 영국 대영도서관, 미국 의회도서관, 바티칸 사도 도서관 등 전 세계 주요 기관에 분산 소장되어 있다. 각 기관에서 엄격한 보존 환경 하에 관리하고 있다.","connection":"국제적으로 분산 소장된 기록물의 보존은 각 소장 기관의 보존 정책에 의존한다. 국제적 보존 표준의 공유가 중요하다."},"접근·열람 방법":{"method":"카드","code":"115","content":"구텐베르크 박물관(마인츠)에서 원본을 관람할 수 있다. 대영도서관과 미국 의회도서관 등에서 디지털 이미지를 온라인으로 제공하고 있다.","connection":"국제적 디지털 아카이브 협력을 통한 접근성 확대는 기록정보서비스의 글로벌 확장 사례이다."}}},{"no":16,"category":"유럽 ① 독일과 주변국","name":"베토벤 교향곡 9번 자필악보","country":"독일","year":2001,"difficulty":4,"items":{"생산 배경":{"method":"카드","code":"249","content":"루트비히 판 베토벤이 1822년부터 1824년까지 작곡한 교향곡 제9번의 자필 악보이다. 청각을 거의 상실한 상태에서 완성한 작품으로, 실러의 시 \"환희의 송가\"를 합창에 도입한 최초의 교향곡이다. 음악을 통한 인류 보편적 가치의 표현이라는 목적에서 창작되었다.","connection":"창작자의 신체적 조건과 기록 생산 과정의 관계는 기록의 맥락(context) 이해에 중요하다. 기록의 생산 배경에 대한 깊은 이해는 기록물 기술(description)의 질을 높인다."},"생산 방법":{"method":"카드","code":"181","content":"베토벤이 직접 펜으로 작성한 자필 총보(autograph score)이다. 수정과 고침의 흔적이 그대로 남아 있어 작곡 과정을 추적할 수 있다. 4개 악장으로 구성되며, 4악장에 합창이 포함된다.","connection":"자필 기록(autograph)의 수정 흔적은 기록 생산 과정의 증거로서, 기록의 진본성(authenticity) 확인에 핵심적인 요소이다."},"생존 이야기":{"method":"카드","code":"186","content":"베토벤 사후 여러 소장자를 거쳐 현재 베를린 국립도서관에 소장되어 있다. 제2차 세계대전 중 소실 위기를 겪었으나, 안전한 장소로 이관되어 보존되었다. 일부 페이지가 분리되어 다른 기관에 소장된 경우도 있다.","connection":"기록물의 소장 이력(custodial history) 추적과 분리된 기록물의 통합적 관리는 기록관리의 중요한 과제이다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"서양 음악사의 정점을 보여주는 자필 기록으로, 음악적·문화적 가치가 탁월하다. EU 공식 송가의 원곡이며, 2001년 유네스코 세계기록유산에 등재되었다.","connection":"예술 기록물의 문화적 가치 평가 사례이다. 기록물의 상징적 가치가 국제기구의 공식 채택으로 이어진 경우이다."},"현재 보존 방법":{"method":"카드","code":"218","content":"베를린 국립도서관(Staatsbibliothek zu Berlin)에 소장되어 있으며, 엄격한 보존 환경에서 관리된다. 고해상도 디지털 이미지가 제작되어 있다.","connection":"자필 악보와 같은 유일본의 보존은 원본의 물리적 상태 관리와 디지털 대리물 제작의 병행이 필수적이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"베를린 국립도서관의 디지털 컬렉션에서 자필 악보의 디지털 이미지를 열람할 수 있다. 주요 음악 관련 전시에서 원본이 공개되기도 한다.","connection":"디지털화를 통한 원본 열람 대체는 기록물 보존과 접근의 균형을 위한 기본 전략이다."}}},{"no":17,"category":"유럽 ① 독일과 주변국","name":"괴테 문학 유산","country":"독일","year":2001,"difficulty":3,"items":{"생산 배경":{"method":"카드","code":"267","content":"요한 볼프강 폰 괴테(1749~1832)가 생애 동안 생산한 문학 작품 원고, 서신, 일기, 과학 연구 노트 등을 총칭하는 기록 유산이다. 독일 고전주의 문학의 정수이며, 문학·철학·과학을 아우르는 다면적 지식인의 기록이다.","connection":"개인 기록(personal papers)의 체계적 수집과 관리의 중요성을 보여주는 사례이다. 다양한 유형의 기록물을 하나의 퐁(fonds)으로 관리하는 것은 출처원칙의 적용이다."},"생산 방법":{"method":"카드","code":"123","content":"괴테가 직접 작성한 자필 원고, 서신, 일기장, 드로잉, 과학 실험 노트 등으로 구성되어 있다. 문학 작품뿐 아니라 색채론, 광물학 등 자연과학 연구 기록도 포함된다.","connection":"한 생산자의 다양한 활동 기록을 통합적으로 관리하는 것은 기록의 원질서(original order) 존중과 출처원칙의 핵심이다."},"생존 이야기":{"method":"웹제공","code":"","content":"괴테 사후 바이마르의 괴테·실러 아카이브에서 체계적으로 수집·보존해 왔다. 제2차 세계대전 중에도 안전하게 보존되었으며, 동독 시기에도 학술적 관리가 지속되었다.","connection":"전문 아카이브 기관의 설립과 운영은 개인 기록물의 장기 보존에 결정적 역할을 한다. 정치 체제 변동에도 기록관리의 연속성이 유지된 사례이다."},"기록문화적 가치":{"method":"카드","code":"235","content":"독일 고전주의 문학의 원본 기록으로, 유럽 문학사와 사상사 연구의 핵심 자료이다. 2001년 유네스코 세계기록유산에 등재되었다.","connection":"개인 기록물군(personal fonds)의 학술적·문화적 가치를 종합적으로 평가한 사례이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"바이마르의 괴테·실러 아카이브(Goethe- und Schiller-Archiv)에 소장되어 있다. 독일 최고(最古)의 문학 아카이브로서 체계적인 보존 시스템을 갖추고 있다.","connection":"전문 분야 아카이브(specialized archives)의 운영은 특정 주제 기록물의 보존과 활용에 최적화된 기록관리 모델이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"괴테·실러 아카이브에서 연구 목적의 열람이 가능하다. 디지털 컬렉션을 통해 일부 자필 원고를 온라인으로 열람할 수 있다.","connection":"전문 아카이브의 연구 지원 서비스는 기록정보서비스의 전문화된 형태이다."}}},{"no":18,"category":"유럽 ① 독일과 주변국","name":"메트로폴리스 필름","country":"독일","year":2001,"difficulty":5,"items":{"생산 배경":{"method":"카드","code":"221","content":"프리츠 랑 감독이 1927년 독일에서 제작한 SF 영화 \"메트로폴리스\"의 원본 필름이다. 미래 도시의 계급 갈등을 다룬 영화로, 표현주의 영화의 대표작이다. 바이마르 공화국 시기 독일 영화 산업의 기술적·예술적 역량을 보여주는 기록물이다.","connection":"영화 필름이 기록유산으로서 인정받은 사례로, 시청각 기록물의 기록관리적 가치에 대한 인식 확대를 보여준다."},"생산 방법":{"method":"카드","code":"250","content":"35mm 필름으로 촬영되었으며, 당시 최첨단 특수 효과 기법이 사용되었다. UFA 영화사에서 대규모 예산으로 제작하였으며, 수천 명의 엑스트라가 동원되었다.","connection":"영화 기록물의 생산 기술과 매체에 대한 이해는 시청각 기록물 관리의 기본 요건이다."},"생존 이야기":{"method":"카드","code":"112","content":"원본 필름이 여러 차례 편집·단축되면서 완전한 원본이 오랫동안 분실된 것으로 여겨졌다. 2008년 아르헨티나 부에노스아이레스에서 원본에 가까운 16mm 복제본이 발견되어 복원에 활용되었다.","connection":"기록물의 원본(original)과 편집본(edited version)의 관계 추적은 기록의 진본성 확인에 핵심적이다. 해외 소장 기록물의 발견과 활용은 국제 기록관리 협력의 중요성을 보여준다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"영화사의 기념비적 작품이자, 시각 예술과 기술 혁신의 결합을 보여주는 기록물이다. 2001년 유네스코 세계기록유산에 등재된 최초의 영화 기록물 중 하나이다.","connection":"시청각 기록물의 예술적·기술적 가치를 평가한 사례이다."},"현재 보존 방법":{"method":"카드","code":"160","content":"독일 영화박물관(Deutsche Kinemathek)과 뮌헨 영화박물관에서 복원본을 보존하고 있다. 디지털 복원이 완료되어 고화질 디지털 파일로도 보존된다.","connection":"영화 필름의 디지털 복원(digital restoration)은 매체변환의 전문적 영역이며, 원본의 예술적 의도를 보존하는 것이 핵심 과제이다."},"접근·열람 방법":{"method":"카드","code":"245","content":"복원된 디지털 버전이 DVD·블루레이로 출시되어 있으며, 독일 영화박물관에서 상시 관람할 수 있다. 다양한 스트리밍 플랫폼에서도 시청 가능하다.","connection":"복원 기록물의 상업적·교육적 활용은 기록물의 접근성 확대와 가치 재발견에 기여한다."}}},{"no":19,"category":"유럽 ① 독일과 주변국","name":"그림형제 동화 원고","country":"독일","year":2005,"difficulty":2,"items":{"생산 배경":{"method":"웹제공","code":"","content":"야콥 그림과 빌헬름 그림 형제가 1812년 처음 출판한 독일 민간 전설과 동화의 수집 원고이다. 구전 문학을 문자 기록으로 전환하여 보존하려는 민속학적·언어학적 목적에서 생산되었다. \"백설 공주\", \"헨젤과 그레텔\" 등 210편의 이야기가 수록되어 있다.","connection":"구전 기록의 문자화(transcription)는 무형의 지식을 유형의 기록물로 전환하는 기록화 사업이다. 기록의 매체 전환은 기록관리의 핵심 개념 중 하나이다."},"생산 방법":{"method":"웹제공","code":"","content":"그림 형제가 직접 채록하고 편집한 자필 원고이다. 여러 차례 개정판을 거치면서 내용이 수정·보완되었으며, 초판 원고에는 수정 흔적이 남아 있다.","connection":"기록물의 판본(version) 관리와 개정 이력 추적은 기록관리에서의 버전 관리(version control)와 동일한 원리이다."},"생존 이야기":{"method":"웹제공","code":"","content":"카셀 지역의 그림 형제 관련 기관에서 보존되어 왔으며, 제2차 세계대전 중에도 안전하게 보호되었다. 자필 원고와 초판본 등이 현존한다.","connection":"기록물의 각 판본(version)을 모두 보존하는 것은 기록의 변천사를 추적하는 데 필수적이다."},"기록문화적 가치":{"method":"카드","code":"226","content":"구전 문학을 체계적으로 수집·기록한 최초의 시도 중 하나로, 민속학의 기초를 놓은 기록물이다. 2005년 유네스코 세계기록유산에 등재되었다.","connection":"무형 유산의 유형 기록화라는 관점에서, 기록물의 문화적 가치와 학술적 가치를 동시에 평가한 사례이다."},"현재 보존 방법":{"method":"카드","code":"152","content":"카셀의 그림 형제 박물관(Grimmwelt Kassel)과 베를린 국립도서관에 원고가 분산 소장되어 있다.","connection":"분산 소장 기록물에 대한 통합적 서지 정보 관리는 기록관리 네트워크의 과제이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"그림 형제 박물관에서 원고를 관람할 수 있으며, 디지털 이미지가 온라인으로 공개되어 있다.","connection":"문화 기록물의 대중적 접근은 기록관의 교육적 서비스 기능과 연결된다."}}},{"no":20,"category":"유럽 ① 독일과 주변국","name":"니벨룽겐의 노래","country":"독일","year":2009,"difficulty":4,"items":{"생산 배경":{"method":"웹제공","code":"","content":"13세기 초 독일어로 작성된 중세 영웅 서사시의 필사본이다. 게르만 신화에 기반한 지크프리트의 영웅담과 부르군트 왕국의 멸망을 다루고 있다. 구전 서사를 문자로 기록하여 보존한 중세 기록물이다.","connection":"구전 서사의 문자 기록화는 무형 지식의 유형화 과정이며, 기록의 매체 전환이라는 기록관리적 개념과 연결된다."},"생산 방법":{"method":"카드","code":"243","content":"13세기 필경사들이 양피지에 필사한 기록물이다. 현재 3개의 주요 필사본(A, B, C)이 전해지며, 각각 약간의 내용 차이가 있다.","connection":"동일 내용의 복수 필사본(multiple manuscripts) 존재는 이본(variant) 관리의 과제를 수반한다. 기록물 기술에서 각 이본 간의 관계를 명확히 하는 것이 중요하다."},"생존 이야기":{"method":"카드","code":"165","content":"3개 주요 필사본이 각각 다른 기관에 보존되어 왔다. 중세부터 현대까지 수백 년간 도서관과 수도원에서 관리되었다.","connection":"장기간 기관 보존(institutional preservation)의 안정성을 보여주는 사례이다."},"기록문화적 가치":{"method":"카드","code":"229","content":"게르만 문학의 핵심 작품이자 중세 유럽 문화를 이해하는 필수 자료이다. 2009년 유네스코 세계기록유산에 등재되었다.","connection":"문학 기록물의 문화적·학술적 가치가 평가 기준이 된 사례이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"바이에른 국립도서관(뮌헨), 장크트갈렌 수도원 도서관(스위스), 카를스루에 바덴 주립도서관에 3개 필사본이 각각 소장되어 있다.","connection":"분산 소장된 이본의 통합적 관리를 위한 기관 간 협력은 기록관리 네트워크의 실례이다."},"접근·열람 방법":{"method":"카드","code":"134","content":"각 소장 기관에서 연구 목적의 열람이 가능하며, 디지털 이미지가 온라인으로 공개되어 있다.","connection":"분산 소장 기록물에 대한 통합 디지털 접근 서비스 제공은 국제 기록관리 협력의 성과이다."}}},{"no":21,"category":"유럽 ① 독일과 주변국","name":"베를린 장벽 건설과 붕괴 기록물","country":"독일","year":2011,"difficulty":5,"items":{"생산 배경":{"method":"카드","code":"236","content":"1961년 베를린 장벽 건설부터 1989년 붕괴까지의 과정을 기록한 문서, 사진, 영상 등의 기록물이다. 냉전 시기 동서 분단의 상징이었던 장벽과 관련된 정치·외교·사회적 기록을 포괄한다. 분단과 통일이라는 역사적 전환점의 증거 기록이다.","connection":"정치 체제 변동과 관련된 기록물의 수집과 보존은 체제 전환기 기록관리(transitional records management)의 핵심 과제이다."},"생산 방법":{"method":"카드","code":"266","content":"동독 정부의 공식 문서, 슈타지(비밀경찰) 감시 기록, 서독 및 연합국 외교 문서, 시민 시위 현장 영상, 언론 보도 등으로 구성되어 있다. 다양한 국가와 기관에서 생산된 복합적 기록물이다.","connection":"복수 국가·기관의 기록물을 하나의 주제로 통합 관리하는 것은 다원적 출처(multiple provenance) 기록물 관리의 과제이다."},"생존 이야기":{"method":"웹제공","code":"","content":"동독 정권 붕괴 후 슈타지 문서 등 비밀 기록이 대량으로 공개되었다. 시민들이 슈타지 문서 파기를 막고 보존에 기여하였다. 통일 후 체계적인 정리와 공개가 이루어졌다.","connection":"체제 전환기의 기록 파기 방지와 공개는 기록관리의 민주적 기능을 보여주는 사례이다. 비밀 기록의 공개 전환(declassification)은 기록관리의 중요한 정책 영역이다."},"기록문화적 가치":{"method":"카드","code":"105","content":"냉전과 분단, 그리고 평화적 통일의 전 과정을 증거하는 기록물로, 현대사의 핵심 자료이다. 2011년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 정치적·역사적 중요성이 가치 평가의 핵심 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"198","content":"독일 연방문서관(Bundesarchiv), 슈타지 기록 보관소(BStU), 베를린 장벽 기념관 등에 분산 소장되어 있다. 디지털화가 진행되어 있다.","connection":"체제 전환기 기록물의 전문 보관 기관 설립은 특수 기록물 관리의 모범 사례이다."},"접근·열람 방법":{"method":"카드","code":"264","content":"베를린 장벽 기념관에서 관련 전시를 상시 관람할 수 있다. 슈타지 기록 보관소에서 연구 목적의 열람이 가능하며, 온라인 디지털 아카이브도 운영되고 있다.","connection":"비밀 기록의 공개와 시민 접근권 보장은 민주주의 사회에서 기록관리의 핵심 가치이다."}}},{"no":22,"category":"유럽 ① 독일과 주변국","name":"안네 프랑크의 일기","country":"네덜란드","year":2009,"difficulty":5,"items":{"생산 배경":{"method":"카드","code":"224","content":"유대인 소녀 안네 프랑크(1929~1945)가 제2차 세계대전 중 나치의 박해를 피해 은신하면서 1942년 6월부터 1944년 8월까지 작성한 일기이다. 전쟁과 박해 속에서 성장기 소녀의 내면을 기록한 사적 기록물이다. 홀로코스트의 인간적 증언으로서 생산되었다.","connection":"개인 일기가 역사적 증언으로서의 가치를 획득한 사례로, 사적 기록(private records)의 공적 가치 전환을 보여준다. 기록의 생산 맥락과 이후의 사회적 활용 사이의 관계를 이해하는 것이 중요하다."},"생산 방법":{"method":"카드","code":"138","content":"안네 프랑크가 직접 네덜란드어로 작성한 친필 일기이다. 체크무늬 노트와 별도의 공책에 기록하였으며, 방송을 통해 전쟁 후 일기를 출판할 계획으로 수정본도 작성하였다.","connection":"원본과 수정본이 함께 존재하는 경우, 각 판본의 관계와 차이를 기술하는 것은 기록물 기술(archival description)의 전문적 영역이다."},"생존 이야기":{"method":"웹제공","code":"","content":"은신처 발각 후 안네는 수용소에서 사망하였으나, 일기는 은신처에 남아 있다가 아버지 오토 프랑크에 의해 발견·보존되었다. 1947년 출판 이후 전 세계 70개 이상의 언어로 번역되었다.","connection":"기록물의 우연한 보존과 이후의 체계적 관리로의 전환은 기록물의 소장 이력(custodial history)에서 중요한 전환점이다."},"기록문화적 가치":{"method":"카드","code":"136","content":"홀로코스트의 인간적 증언이자, 전쟁과 박해 속 인간 존엄성에 대한 기록이다. 2009년 유네스코 세계기록유산에 등재되었으며, 인권 교육의 핵심 자료로 활용된다.","connection":"사적 기록물의 보편적·인도주의적 가치가 국제적으로 인정받은 사례이다. 기록물의 가치는 시간이 지나면서 재평가될 수 있음을 보여준다."},"현재 보존 방법":{"method":"카드","code":"272","content":"네덜란드 암스테르담의 안네 프랑크의 집(Anne Frank House)에서 원본 일기를 보존하고 있다. 네덜란드 전쟁기록연구소(NIOD)에서도 관련 자료를 관리한다.","connection":"기념관과 연구소의 협력적 보존 체계는 기록물의 보존과 교육적 활용을 동시에 달성하는 모델이다."},"접근·열람 방법":{"method":"카드","code":"120","content":"안네 프랑크의 집을 방문하여 은신처와 관련 전시를 관람할 수 있다. 안네 프랑크 재단 웹사이트에서 디지털 자료와 교육 프로그램을 이용할 수 있다.","connection":"기록물을 활용한 인권 교육 프로그램은 기록정보서비스의 교육적 기능 확대 사례이다."}}},{"no":23,"category":"유럽 ② 프랑스와 주변국","name":"인간과 시민의 권리선언 원본","country":"프랑스","year":2003,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"1789년 프랑스 혁명 과정에서 국민의회가 채택한 인간과 시민의 권리에 관한 선언의 원본 문서이다. 자유, 평등, 주권재민 등 근대 인권의 기본 원칙을 천명한 기록물이다. 절대왕정의 종식과 시민 권리의 법적 보장을 위해 생산되었다.","connection":"법적 기록물의 생산 배경을 이해하는 것은 기록의 맥락 분석에 필수적이다. 기록물이 법적 효력을 가진다는 점에서 기록의 증거적 가치(evidential value)가 극대화된 사례이다."},"생산 방법":{"method":"카드","code":"195","content":"국민의회에서 토론과 표결을 거쳐 채택된 공식 문서이다. 17개 조항으로 구성되어 있으며, 양피지에 필사되었다. 의회 기록과 함께 보존되었다.","connection":"의회 기록물의 생산 절차(심의·표결·채택)가 기록의 법적 효력을 보장하는 사례이다. 기록의 진본성은 생산 절차의 적법성에 의해 뒷받침된다."},"생존 이야기":{"method":"웹제공","code":"","content":"프랑스 혁명 이후 여러 차례의 정치적 격변을 거치면서도 프랑스 국립문서관에서 보존되어 왔다. 프랑스 헌법의 전문에 지금도 인용되고 있어 현행 법적 효력을 유지하고 있다.","connection":"기록물이 현행 법적 효력을 유지하면서 동시에 역사적 기록으로서의 가치도 지니는 사례이다. 현용·준현용·비현용 기록의 수명주기(life cycle) 개념에 대한 재검토가 필요한 경우이다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"근대 인권 사상의 출발점을 이루는 기록물로, 전 세계 민주주의 헌법의 기초가 되었다. 2003년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 법적·사상적 영향력이 가치 평가의 핵심 기준이 된 사례이다. 기록의 가치는 해당 기록이 미친 사회적 영향의 범위와 깊이에 의해 결정될 수 있다."},"현재 보존 방법":{"method":"카드","code":"183","content":"프랑스 국립문서관(Archives nationales)에 원본이 소장되어 있다. 엄격한 보존 환경에서 관리되며, 고해상도 디지털 이미지가 제작되어 있다.","connection":"국가 핵심 기록물의 보존은 국립문서관의 최우선 업무이다. 원본의 물리적 보존과 디지털 대리물 제작의 병행이 표준적 전략이다."},"접근·열람 방법":{"method":"카드","code":"208","content":"프랑스 국립문서관에서 특별 전시를 통해 원본을 공개한다. 프랑스 국립문서관 디지털 아카이브에서 고해상도 이미지를 열람할 수 있으며, 다양한 번역본이 온라인으로 제공된다.","connection":"국가 핵심 기록물에 대한 다국어 접근 서비스 제공은 국제적 기록정보서비스의 사례이다."}}},{"no":24,"category":"유럽 ② 프랑스와 주변국","name":"뤼미에르 형제 영화 필름","country":"프랑스","year":2005,"difficulty":5,"items":{"생산 배경":{"method":"웹제공","code":"","content":"1895년 오귀스트와 루이 뤼미에르 형제가 시네마토그래프로 촬영한 최초의 영화 필름들이다. \"공장을 나서는 노동자들\", \"열차의 도착\" 등 일상의 움직임을 포착한 기록이다. 움직이는 이미지를 기록하고 재생하는 기술의 최초 적용 사례이다.","connection":"새로운 기록 매체(영화 필름)의 탄생은 기록관리의 대상과 범위를 확장시킨 사례이다. 기록 매체의 발전이 기록관리 방법론의 변화를 요구한다는 점을 보여준다."},"생산 방법":{"method":"카드","code":"216","content":"시네마토그래프(촬영·영사 겸용 기기)로 촬영한 35mm 필름이다. 각 필름은 약 50초 분량으로, 실제 장면을 편집 없이 연속 촬영하였다. 뤼미에르 형제가 직접 촬영하고 현상하였다.","connection":"기록 매체와 기록 기술의 혁신이 기록 생산 방식을 근본적으로 변화시킨 사례이다. 시청각 기록물의 기술적 특성에 대한 이해는 기록관리 전문요원의 필수 역량이다."},"생존 이야기":{"method":"카드","code":"179","content":"뤼미에르 연구소에서 보존해 온 원본 필름이 현존한다. 필름의 물리적 열화에 대응하여 복원 작업이 수행되었으며, 디지털 변환이 완료되어 있다.","connection":"초기 필름 기록물의 보존은 매체의 물리적 특성(셀룰로이드의 열화)에 대한 전문적 대응을 요구한다. 매체변환(format migration)은 시청각 기록물 보존의 필수 과정이다."},"기록문화적 가치":{"method":"카드","code":"197","content":"인류 최초의 영화 기록물로서, 시청각 기록의 출발점을 보여준다. 2005년 유네스코 세계기록유산에 등재되었으며, 영화사의 기원을 증명한다.","connection":"기록 매체의 혁신이 가져온 기록관리적 의미를 평가한 사례이다. 새로운 유형의 기록물에 대한 가치 인식의 확대를 보여준다."},"현재 보존 방법":{"method":"카드","code":"217","content":"프랑스 리옹의 뤼미에르 연구소(Institut Lumière)에 원본 필름이 보존되어 있다. 프랑스 국립영화센터(CNC)에서도 관련 자료를 관리한다.","connection":"영화 필름의 전문적 보존은 온·습도, 화학적 안정성 등 매체별 특성에 맞는 보존 환경 관리를 요구한다."},"접근·열람 방법":{"method":"카드","code":"210","content":"뤼미에르 연구소에서 관련 전시를 상시 관람할 수 있다. 디지털 복원 영상이 온라인으로 공개되어 있으며, 유튜브 등에서도 시청 가능하다.","connection":"디지털 복원 기록물의 온라인 공개는 기록정보서비스의 확장이며, 대중적 접근성 극대화의 사례이다."}}},{"no":25,"category":"유럽 ② 프랑스와 주변국","name":"드골의 6월 18일 호소문","country":"프랑스","year":2005,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"1940년 6월 18일 샤를 드골이 나치 독일 점령 하의 프랑스 국민에게 BBC 라디오를 통해 발표한 저항 호소문이다. 프랑스 레지스탕스 운동의 출발점이 된 기록물이다. 패전 직후 자유 프랑스 운동을 촉구한 정치적 선언이었다.","connection":"라디오 방송 기록물이 국가적 저항 운동의 근거가 된 사례로, 기록의 사회적 기능과 영향력을 보여준다. 기록 매체(라디오)가 기록의 전파력에 미친 영향을 분석할 수 있는 사례이다."},"생산 방법":{"method":"카드","code":"237","content":"드골이 작성하고 BBC 런던 스튜디오에서 프랑스어로 방송하였다. 원본 방송 녹음은 현존하지 않으며, 텍스트 원고와 이후 재녹음이 전해진다. 영국 BBC 아카이브와 프랑스 국립문서관에 관련 기록이 보존되어 있다.","connection":"원본 녹음이 소실된 경우 텍스트 원고와 재녹음의 관계를 기술하는 것은 기록물의 진본성 검증에서 중요한 과제이다. 기록의 원본 여부 판정은 기록관리의 핵심 업무이다."},"생존 이야기":{"method":"카드","code":"154","content":"전시 상황에서 원본 방송 녹음이 보존되지 못하였다. 그러나 텍스트 원고가 보존되었고, 이후 드골 본인이 재녹음한 버전이 전해진다. 프랑스 국민적 기억의 상징으로 보존되어 왔다.","connection":"원본 소실 후의 기록 복원과 대체물 관리는 기록관리에서의 진본성과 신뢰성 문제를 제기한다."},"기록문화적 가치":{"method":"카드","code":"161","content":"제2차 세계대전 중 프랑스 저항 운동의 출발점을 이루는 기록물로, 프랑스 현대사의 핵심 자료이다. 2005년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 역사적 상징성과 사회적 영향력이 가치 평가의 핵심 기준이 된 사례이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"프랑스 국립문서관에 텍스트 원고가 소장되어 있다. BBC 아카이브에도 관련 기록이 보존되어 있으며, 파리의 드골 기념관에서도 관련 자료를 관리한다.","connection":"복수 기관에 의한 관련 기록물의 분산 관리는 기관 간 협력과 통합적 기술(description)을 요구한다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"파리의 드골 기념관(Mémorial Charles de Gaulle)에서 관련 전시를 관람할 수 있다. 프랑스 국립문서관과 BBC 아카이브에서 디지털 자료를 열람할 수 있다.","connection":"국제적 기관 간 기록 공유와 협력적 접근 서비스는 기록정보서비스의 국제화 사례이다."}}},{"no":26,"category":"유럽 ② 프랑스와 주변국","name":"바이외 태피스트리","country":"프랑스","year":2007,"difficulty":4,"items":{"생산 배경":{"method":"웹제공","code":"","content":"11세기 말(약 1070년대) 제작된 것으로 추정되는 자수 직물로, 1066년 노르만 정복 과정을 58개 장면으로 묘사하고 있다. 윌리엄 공의 잉글랜드 정복이라는 역사적 사건을 시각적으로 기록한 목적에서 제작되었다. 길이 약 70미터에 달하는 대형 직물 기록물이다.","connection":"직물(텍스타일)이 기록 매체로 활용된 특수한 사례로, 기록 매체의 다양성에 대한 인식을 확장한다. 비문서 기록물의 기록관리적 가치를 보여주는 사례이다."},"생산 방법":{"method":"카드","code":"116","content":"아마포에 모사(毛絲)로 자수하여 제작하였다. 라틴어 설명문이 함께 수놓아져 있으며, 인물, 건물, 선박, 동물 등 600여 개의 도상이 포함되어 있다. 제작자는 정확히 알려져 있지 않으나, 영국 남부의 자수 장인들이 제작한 것으로 추정된다.","connection":"제작자 불명의 기록물에 대한 출처 추정과 연구는 기록물의 맥락 정보 복원 과제이다. 비문서 기록물의 기술(description)에는 물리적 특성에 대한 상세한 기술이 요구된다."},"생존 이야기":{"method":"카드","code":"132","content":"프랑스 노르망디 바이외 대성당에서 수백 년간 보존되어 왔다. 프랑스 혁명기에 군용 마차 덮개로 사용될 뻔하였으나, 지역 주민의 노력으로 구출되었다. 제2차 세계대전 중에도 나치에 의한 약탈 위기를 넘겼다.","connection":"기록물의 위기와 구출의 역사는 기록 보존에서 지역 사회의 역할과 인식의 중요성을 보여준다."},"기록문화적 가치":{"method":"카드","code":"251","content":"중세 유럽의 역사적 사건을 시각적으로 기록한 독보적인 기록물로, 역사학·미술사·복식사 연구의 핵심 자료이다. 2007년 유네스코 세계기록유산에 등재되었다.","connection":"비문서 기록물의 다학문적 가치가 평가 기준이 된 사례이다. 기록물의 정보적 가치는 기록 매체의 종류와 무관하게 평가되어야 한다."},"현재 보존 방법":{"method":"카드","code":"175","content":"프랑스 바이외의 바이외 태피스트리 박물관(Musée de la Tapisserie de Bayeux)에 소장되어 있다. 특수 환경에서 보존되며, 빛과 습도가 통제된다.","connection":"직물 기록물의 보존은 매체의 물리적 특성(섬유 소재, 염료)에 맞는 전문적 보존 환경이 요구된다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"바이외 태피스트리 박물관에서 원본을 상시 관람할 수 있다. 고해상도 디지털 이미지가 온라인으로 공개되어 있으며, 인터랙티브 해설 서비스도 제공된다.","connection":"인터랙티브 디지털 서비스는 기록정보서비스의 혁신적 형태로, 이용자 경험을 향상시키는 방법이다."}}},{"no":27,"category":"유럽 ② 프랑스와 주변국","name":"알베르 칸 '지구의 기록'","country":"프랑스","year":2017,"difficulty":2,"items":{"생산 배경":{"method":"웹제공","code":"","content":"프랑스 은행가 알베르 칸(1860~1940)이 1909년부터 1931년까지 전 세계 50여 개국에 사진가와 영상 촬영팀을 보내 기록한 \"지구의 기록(Archives de la Planète)\" 프로젝트이다. 세계 각국의 문화와 풍경을 체계적으로 기록하려는 문화 기록화 사업이었다.","connection":"계획적·체계적 기록화 사업(documentation project)의 초기 사례로, 기록 수집의 목적과 범위가 사전에 설계된 경우이다. 기록화 전략(documentation strategy)의 역사적 원형이라 할 수 있다."},"생산 방법":{"method":"웹제공","code":"","content":"오토크롬(초기 컬러 사진 기술)으로 촬영한 사진 72,000여 장과 183,000미터 분량의 영화 필름으로 구성되어 있다. 전문 사진가와 촬영팀이 칸의 지시에 따라 전 세계에서 촬영하였다.","connection":"기록의 위탁 생산(commissioned production)과 체계적 수집은 기록화 사업의 전형적인 방식이다. 초기 컬러 사진이라는 매체적 특성은 기록물의 기술적 가치를 높인다."},"생존 이야기":{"method":"카드","code":"117","content":"알베르 칸의 파산 후 자료가 오랫동안 방치되었으나, 파리 근교 불로뉴비양쿠르 시가 인수하여 보존하였다. 알베르 칸 박물관에서 체계적으로 정리·보존해 왔다.","connection":"개인 소장 기록물의 공공 기관 인수와 보존은 기록물의 안전한 관리를 위한 중요한 경로이다. 민간 기록물의 공적 관리 전환은 기록관리 정책의 핵심 과제이다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"20세기 초 전 세계의 문화와 풍경을 컬러로 기록한 유일한 대규모 프로젝트이다. 2017년 유네스코 세계기록유산에 등재되었으며, 문화 다양성 기록의 선구적 사례이다.","connection":"기록화 사업의 체계성과 범위가 가치 평가의 핵심 기준이 된 사례이다. 기록물의 문화적·학술적 가치가 시간이 지나면서 증대된 경우이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"파리 근교 불로뉴비양쿠르의 알베르 칸 박물관(Musée Albert Kahn)에 소장되어 있다. 2022년 리노베이션을 거쳐 새로운 전시 공간에서 보존·전시되고 있다.","connection":"대규모 사진·영상 컬렉션의 보존은 매체별 특성에 맞는 차별화된 보존 환경 관리를 요구한다."},"접근·열람 방법":{"method":"카드","code":"114","content":"알베르 칸 박물관에서 사진과 영상을 상시 관람할 수 있다. 박물관 디지털 아카이브에서 일부 컬렉션을 온라인으로 열람할 수 있다.","connection":"대규모 시각 기록물의 디지털 서비스는 기록정보서비스의 시각적 확장이며, 이용자 접근성을 극대화한다."}}},{"no":28,"category":"유럽 ② 프랑스와 주변국","name":"쇼아 다큐멘터리 원본","country":"독일/프랑스","year":2025,"difficulty":2,"items":{"생산 배경":{"method":"카드","code":"269","content":"클로드 란즈만 감독이 1985년 발표한 홀로코스트 다큐멘터리 \"쇼아\"의 원본 촬영 기록물이다. 9시간 30분의 완성작 외에 350시간 이상의 미사용 촬영 원본이 포함된다. 홀로코스트 생존자, 가해자, 목격자의 증언을 직접 기록하려는 목적에서 제작되었다.","connection":"다큐멘터리 촬영 원본(rushes)의 기록관리적 가치를 인정한 사례로, 완성작뿐 아니라 미편집 원본의 보존 가치를 보여준다. 기록의 완전성(completeness) 확보는 편집 과정에서 누락된 정보의 보존에 기여한다."},"생산 방법":{"method":"웹제공","code":"","content":"란즈만 감독이 14개국에서 촬영한 영상과 음성 기록이다. 생존자, 가해 측 인사, 목격자 인터뷰가 핵심이며, 재현 장면 없이 오직 증언과 현장으로만 구성되어 있다.","connection":"구술 증언 기록물의 체계적 수집과 관리는 기록화 사업(documentation project)의 전문적 영역이다. 기록의 생산 방법(인터뷰 기법)에 대한 이해가 기록의 맥락 파악에 중요하다."},"생존 이야기":{"method":"웹제공","code":"","content":"란즈만 감독이 촬영 원본을 보존해 왔으며, 이후 미국 홀로코스트 기념박물관(USHMM)과 프랑스 국립영상음향연구소(INA)에 기탁되어 체계적으로 보존되고 있다.","connection":"개인 소장 기록물의 공공 기관 기탁(deposit)은 기록의 장기 보존과 공적 접근을 동시에 보장하는 기록관리 방안이다."},"기록문화적 가치":{"method":"카드","code":"182","content":"홀로코스트에 대한 가장 중요한 시청각 증언 기록 중 하나이다. 생존자 증언의 직접 기록이라는 점에서 1차 사료로서의 가치가 탁월하며, 2025년 유네스코 세계기록유산에 등재되었다.","connection":"시청각 증언 기록물의 역사적·인도주의적 가치가 평가 기준이 된 사례이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"미국 홀로코스트 기념박물관(USHMM)과 프랑스 INA에 분산 보존되어 있다. 디지털 변환이 완료되어 디지털 파일로도 보존된다.","connection":"시청각 기록물의 국제적 분산보존은 기록의 안전한 장기 보존을 위한 협력적 전략이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"USHMM 웹사이트에서 촬영 원본의 일부를 온라인으로 시청할 수 있다. 완성작은 다양한 매체를 통해 관람 가능하다.","connection":"미편집 원본의 공개 서비스는 연구자에게 완성작 이상의 정보를 제공하며, 기록정보서비스의 심화된 형태이다."}}},{"no":29,"category":"유럽 ② 프랑스와 주변국","name":"토르데시야스 조약","country":"스페인/포르투갈","year":2007,"difficulty":5,"items":{"생산 배경":{"method":"카드","code":"147","content":"1494년 스페인과 포르투갈이 대서양의 새로 발견된 영토를 분할하기 위해 체결한 조약 문서이다. 교황 알렉산데르 6세의 중재로 체결되었으며, 두 나라의 식민 영토 범위를 규정하였다. 유럽 열강의 세계 분할이라는 제국주의적 맥락에서 생산되었다.","connection":"국제 조약 문서의 생산 배경은 당시의 정치적·경제적 맥락과 불가분의 관계에 있다. 기록의 생산 맥락 분석은 기록관리 전문요원의 핵심 역량이다."},"생산 방법":{"method":"웹제공","code":"","content":"양피지에 라틴어와 스페인어·포르투갈어로 작성된 조약문이다. 스페인과 포르투갈 양측이 각각 서명·날인한 원본을 보유하였다.","connection":"조약 문서의 복수 원본(duplicate originals) 존재는 기록물의 진본성 확인에서 중요한 요소이다. 서명·날인에 의한 인증은 기록의 법적 효력을 보장하는 장치이다."},"생존 이야기":{"method":"카드","code":"228","content":"스페인 측 원본은 인디아스 총문서관(Archivo General de Indias)에, 포르투갈 측 원본은 토르데시야스 시립문서관에 각각 보존되어 왔다.","connection":"조약의 각 당사국이 원본을 보유하는 것은 기록의 분산보존이자 각국의 기록 주권 행사이다."},"기록문화적 가치":{"method":"카드","code":"234","content":"근대 국제법과 식민지 체제의 출발점을 보여주는 기록물로, 세계사의 방향을 결정지은 문서이다. 2007년 유네스코 세계기록유산에 등재되었다.","connection":"국제 관계 기록물의 세계사적 영향력이 가치 평가의 핵심 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"200","content":"스페인 세비야의 인디아스 총문서관과 포르투갈 토르데시야스 시립문서관에 원본이 각각 소장되어 있다.","connection":"국제 조약 문서의 양국 분산 보존은 기록물의 출처와 소유권이 복수일 수 있음을 보여준다."},"접근·열람 방법":{"method":"카드","code":"239","content":"인디아스 총문서관에서 연구 목적의 열람이 가능하다. 디지털 이미지가 온라인으로 제공되고 있다.","connection":"국제 기록물에 대한 다국적 접근 서비스는 기록관리의 국제 협력을 통해 실현된다."}}},{"no":30,"category":"유럽 ② 프랑스와 주변국","name":"바르샤바 연맹 종교관용 문서","country":"폴란드","year":2003,"difficulty":3,"items":{"생산 배경":{"method":"카드","code":"125","content":"1573년 폴란드-리투아니아 연방의 귀족들이 종교적 관용을 선언한 문서이다. 가톨릭, 개신교 등 다양한 종파 간의 평화적 공존을 법적으로 보장하였다. 종교 전쟁이 유럽 전역을 휩쓸던 시기에 종교적 관용의 원칙을 천명한 기록물이다.","connection":"종교적 관용 문서의 생산 배경은 당시 유럽의 종교적 갈등이라는 맥락에서 이해해야 한다. 기록물의 역사적 맥락 분석은 기록의 가치를 온전히 파악하기 위한 전제이다."},"생산 방법":{"method":"카드","code":"106","content":"폴란드 귀족 회의에서 채택된 공식 문서로, 참여 귀족들의 서명이 포함되어 있다. 라틴어와 폴란드어로 작성되었다.","connection":"다수 서명자에 의한 공식 문서의 인증은 기록의 진본성과 법적 효력을 보장하는 전통적 방식이다."},"생존 이야기":{"method":"웹제공","code":"","content":"폴란드 국립문서관에서 보존되어 왔으며, 수 세기에 걸친 정치적 격변에도 불구하고 보존 상태가 양호하다.","connection":"국가 핵심 기록물의 장기 보존은 국립문서관의 근본적 존재 이유이다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"종교적 관용의 원칙을 법적으로 천명한 세계 최초의 문서 중 하나로, 인권 사상의 발전에 기여한 기록이다. 2003년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 사상적·법적 선구성이 가치 평가의 핵심 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"191","content":"폴란드 바르샤바의 중앙고문서관(Archiwum Główne Akt Dawnych)에 소장되어 있다. 엄격한 보존 환경에서 관리된다.","connection":"국가 핵심 기록물의 보존 환경 관리는 기록관리기관의 최우선 업무이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"폴란드 중앙고문서관에서 연구 목적의 열람이 가능하다. 디지털 이미지가 온라인으로 제공되고 있다.","connection":"역사적 법률 문서에 대한 학술적 접근 서비스는 기록관의 연구 지원 기능이다."}}},{"no":31,"category":"영국","name":"마그나카르타","country":"영국","year":2009,"difficulty":2,"items":{"생산 배경":{"method":"웹제공","code":"","content":"1215년 잉글랜드의 존 왕이 귀족들의 압력으로 서명한 대헌장으로, 왕권을 법 아래에 두고 개인의 권리를 보장한 최초의 법적 문서 중 하나이다. 봉건 귀족의 권리 보호에서 출발하였으나, 이후 근대 입헌주의와 인권 사상의 기초가 되었다.","connection":"법적 기록물의 생산 배경이 시대와 함께 재해석되는 사례로, 기록의 맥락은 고정된 것이 아니라 시대적 관점에 따라 확장될 수 있음을 보여준다."},"생산 방법":{"method":"웹제공","code":"","content":"양피지에 라틴어로 작성되었으며, 왕의 인장(seal)이 부착되어 있다. 여러 부가 제작되어 잉글랜드 각지에 배포되었다.","connection":"인장에 의한 인증과 복수 부본 배포는 기록의 진본성 보장과 분산보존의 동시 실현 사례이다."},"생존 이야기":{"method":"카드","code":"163","content":"원본 4부가 현존하며, 대영도서관(2부)과 링컨 대성당, 솔즈베리 대성당에 각각 보존되어 있다. 800년 이상 보존되어 온 기록물이다.","connection":"복수 원본의 분산 보존이 기록의 장기 생존에 기여한 대표적 사례이다."},"기록문화적 가치":{"method":"카드","code":"259","content":"입헌주의와 법치주의의 기원을 보여주는 기록물로, 전 세계 민주주의 헌법의 근간이 되었다. 2009년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 법적·사상적 영향력이 전 세계적 범위에서 인정받은 가치 평가 사례이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"대영도서관, 링컨 대성당, 솔즈베리 대성당에 원본이 분산 소장되어 있다. 대영도서관에서 특수 전시실에 보존·전시하고 있다.","connection":"핵심 역사 기록물의 전시와 보존을 병행하는 것은 기록관리기관의 주요 과제이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"대영도서관의 Treasures Gallery에서 원본을 상시 관람할 수 있다. 대영도서관 디지털 컬렉션에서 고해상도 이미지를 열람할 수 있다.","connection":"핵심 기록물의 상시 전시와 디지털 서비스 병행은 기록정보서비스의 표준적 접근 방식이다."}}},{"no":32,"category":"영국","name":"허퍼드 마파문디","country":"영국","year":2007,"difficulty":5,"items":{"생산 배경":{"method":"카드","code":"202","content":"1300년경 제작된 중세 세계지도로, 당시 유럽인들의 세계 인식을 반영한 기록물이다. 지리적 정보뿐 아니라 성경적 서사, 역사적 사건, 신화적 존재 등을 함께 담고 있다. 종교적·학문적 세계관을 시각화한 기록이다.","connection":"지도가 단순한 지리 기록이 아니라 시대의 세계관을 반영하는 복합적 기록물이라는 점에서, 기록의 맥락 분석이 다층적으로 이루어져야 함을 보여준다."},"생산 방법":{"method":"카드","code":"101","content":"송아지 가죽(벨럼)에 잉크와 채색으로 제작된 대형 지도이다. 지름 약 1.6미터의 원형 지도로, 예루살렘을 중심에 배치한 TO 지도 양식을 따르고 있다.","connection":"비문서 기록물(지도)의 물리적 특성과 제작 기법에 대한 이해는 보존과 기술에 필수적이다."},"생존 이야기":{"method":"카드","code":"207","content":"허퍼드 대성당에서 약 700년간 연속적으로 보존되어 왔다. 1988년 재정난으로 매각 위기에 처했으나, 모금 운동을 통해 보존되었다.","connection":"기록물의 매각 위기와 공적 보존의 문제는 기록물의 소유권과 공공성 사이의 긴장을 보여준다."},"기록문화적 가치":{"method":"카드","code":"153","content":"중세 유럽의 세계 인식을 종합적으로 보여주는 유일한 대형 세계지도이다. 2007년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 유일성과 학술적 가치가 평가의 핵심 기준이 된 사례이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"영국 허퍼드 대성당의 체인드 도서관에 보존·전시되어 있다. 특수 전시 케이스에서 온·습도가 통제된 환경으로 관리된다.","connection":"대형 기록물의 보존과 전시를 위한 특수 시설 관리는 기록관리의 전문적 영역이다."},"접근·열람 방법":{"method":"카드","code":"131","content":"허퍼드 대성당을 방문하여 원본을 관람할 수 있다. 디지털 이미지와 인터랙티브 해설이 온라인으로 제공된다.","connection":"기록물의 시각적 특성을 활용한 디지털 서비스는 이용자 경험을 향상시키는 기록정보서비스이다."}}},{"no":33,"category":"영국","name":"카리브해 노예 등록부","country":"영국","year":2009,"difficulty":2,"items":{"생산 배경":{"method":"웹제공","code":"","content":"영국 식민지 시기 카리브해 지역의 노예 소유를 체계적으로 등록한 공식 문서이다. 1812년부터 1834년 노예제 폐지까지 작성되었으며, 노예의 이름, 나이, 출신지, 소유자 정보 등이 기록되어 있다. 식민지 행정과 노예 관리를 위한 제도적 기록이다.","connection":"제도적 억압의 행정 기록이 역사적 증거로서의 가치를 획득한 사례로, 기록의 원래 목적과 후대의 활용 사이의 괴리를 보여준다. 기록물의 가치는 생산 목적과 별개로 평가될 수 있다."},"생산 방법":{"method":"웹제공","code":"","content":"영국 식민지 관청의 관리들이 작성한 등록부 형태의 공식 문서이다. 정형화된 양식에 노예 개인별 정보를 기입하는 방식으로 작성되었다.","connection":"정형화된 양식(form)에 의한 기록 생산은 기록의 시리즈(series) 구성과 데이터베이스화에 유리한 구조이다."},"생존 이야기":{"method":"카드","code":"171","content":"영국 국립문서관(The National Archives)에서 체계적으로 보존되어 왔다. 식민지 행정 기록의 일부로서 이관·보존되었다.","connection":"식민지 기록물의 구 종주국 보관은 기록물의 소유권과 원 생산지 사이의 국제적 쟁점을 수반한다."},"기록문화적 가치":{"method":"카드","code":"113","content":"대서양 노예 무역과 노예제의 실상을 증명하는 핵심 기록물이다. 아프리카 디아스포라의 족보 연구에 유일한 자료이며, 2009년 유네스코 세계기록유산에 등재되었다.","connection":"억압의 기록이 후대에 역사적 진실 규명과 정체성 회복의 자료가 된 사례로, 기록의 가치가 시대에 따라 재평가될 수 있음을 보여준다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"영국 큐(Kew)의 국립문서관(The National Archives)에 소장되어 있다. 디지털화가 완료되어 온라인 데이터베이스로 구축되어 있다.","connection":"대량 정형 기록물의 데이터베이스화는 기록의 검색성과 활용도를 극대화하는 전략이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"영국 국립문서관 웹사이트에서 노예 등록부 데이터베이스를 무료로 검색할 수 있다. 가족 역사(족보) 연구를 위한 전문 검색 서비스가 제공된다.","connection":"기록물의 데이터베이스화를 통한 개인별 검색 서비스는 기록정보서비스의 혁신적 형태이다."}}},{"no":34,"category":"영국","name":"히치콕 초기 무성영화 9편","country":"영국","year":2017,"difficulty":5,"items":{"생산 배경":{"method":"카드","code":"166","content":"알프레드 히치콕이 1925년부터 1929년까지 영국에서 감독한 초기 무성영화 9편의 필름이다. 이후 할리우드에서 \"서스펜스의 대가\"로 불리게 되는 히치콕의 초기 작품 세계를 보여주는 기록물이다.","connection":"예술가의 초기 작품 기록은 창작 과정의 발전을 추적하는 데 중요한 자료이다. 기록의 시리즈적 맥락에서 초기 작품의 위치를 파악하는 것이 기록물 기술의 과제이다."},"생산 방법":{"method":"웹제공","code":"","content":"35mm 무성 영화 필름으로 제작되었다. 영국의 영화 스튜디오에서 촬영되었으며, 당시의 영화 제작 기술이 반영되어 있다.","connection":"무성영화 시대의 필름 기술과 현대의 차이를 이해하는 것은 시청각 기록물 관리의 기본이다."},"생존 이야기":{"method":"카드","code":"255","content":"영국영화연구소(BFI)에서 수집·보존해 왔다. 일부 필름은 열화나 소실 위기를 겪었으나 디지털 복원이 이루어졌다.","connection":"영화 필름의 물리적 열화에 대응한 디지털 복원은 매체변환의 전문적 사례이다."},"기록문화적 가치":{"method":"카드","code":"252","content":"세계 영화사에 큰 영향을 미친 감독의 초기 작품으로, 영화 예술의 발전사를 보여주는 기록이다. 2017년 유네스코 세계기록유산에 등재되었다.","connection":"예술 기록물의 역사적·미학적 가치가 평가 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"254","content":"영국영화연구소(BFI) 국립필름아카이브에 보존되어 있다. 디지털 복원이 완료되어 고화질 디지털 파일로도 보존된다.","connection":"국립필름아카이브의 운영은 시청각 기록물 전문 보존 기관의 모범 사례이다."},"접근·열람 방법":{"method":"카드","code":"149","content":"BFI Player에서 복원된 영상을 시청할 수 있다. DVD·블루레이로도 출시되어 있다.","connection":"복원 기록물의 다양한 매체를 통한 배포는 기록정보서비스의 확장이다."}}},{"no":35,"category":"영국","name":"처칠 아카이브","country":"영국","year":2025,"difficulty":5,"items":{"생산 배경":{"method":"카드","code":"133","content":"윈스턴 처칠(1874~1965)이 정치인·작가·군인으로 활동하면서 생산한 방대한 개인 기록물이다. 서신, 연설문 원고, 정책 문서, 개인 일기, 사진 등이 포함된다. 20세기 영국과 세계 정치사의 핵심 인물의 생애를 총체적으로 기록한 자료이다.","connection":"주요 정치인의 개인 기록물(personal papers)은 공적 기록과 사적 기록이 혼재된 특수한 기록물군이다. 이러한 기록물의 관리에서 공적 기록과 사적 기록의 구분은 기록관리의 중요한 과제이다."},"생산 방법":{"method":"카드","code":"212","content":"처칠이 직접 작성하거나 수신한 서신, 타이핑된 연설문 원고와 수정본, 각료 회의 기록, 전쟁 관련 문서 등으로 구성되어 있다. 수십 년에 걸친 방대한 분량이다.","connection":"대규모 개인 기록물군의 정리와 기술은 출처원칙과 원질서 존중 원칙의 적용이 필수적이다."},"생존 이야기":{"method":"카드","code":"188","content":"처칠 가문과 처칠 아카이브 센터에서 체계적으로 보존해 왔다. 케임브리지 대학교 처칠 칼리지에 기탁되어 전문적으로 관리되고 있다.","connection":"개인 기록물의 대학 기관 기탁은 기록의 학술적 활용과 전문적 보존을 동시에 달성하는 방안이다."},"기록문화적 가치":{"method":"카드","code":"214","content":"20세기 세계 정치사의 핵심 인물의 기록으로, 양차 세계대전과 냉전 시기의 역사 연구에 필수적인 자료이다. 2025년 유네스코 세계기록유산에 등재되었다.","connection":"개인 기록물군의 역사적·정치적 가치가 세계적으로 인정받은 사례이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"케임브리지 대학교 처칠 칼리지 처칠 아카이브 센터(Churchill Archives Centre)에 소장되어 있다. 전문적인 보존 환경에서 관리된다.","connection":"대학 부설 아카이브의 전문적 운영은 특수 기록물 관리의 우수 사례이다."},"접근·열람 방법":{"method":"카드","code":"174","content":"처칠 아카이브 센터에서 연구 목적의 열람이 가능하다. 일부 기록물은 디지털화되어 온라인으로 열람할 수 있다.","connection":"연구자 대상 전문 열람 서비스와 디지털 접근의 병행은 기록정보서비스의 다층적 접근 전략이다."}}},{"no":36,"category":"영국","name":"다윈 아카이브","country":"영국","year":2025,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"찰스 다윈(1809~1882)이 생애 동안 생산한 과학 연구 기록, 서신, 노트, 원고 등의 기록물이다. 진화론의 발전 과정을 보여주는 핵심 자료로, 비글호 항해 기록, 종의 기원 집필 과정 등이 포함된다.","connection":"과학자의 연구 기록은 과학적 발견의 과정을 증거하는 기록물이다. 기록의 생산 과정 자체가 학술적 가치를 지니는 사례이다."},"생산 방법":{"method":"카드","code":"265","content":"다윈이 직접 작성한 연구 노트, 실험 기록, 서신, 원고 등으로 구성되어 있다. 비글호 항해 일지, 동식물 표본 관찰 기록, 동료 과학자와의 서신 등이 포함된다.","connection":"과학 연구 기록물의 체계적 관리는 과학사 연구와 지적 재산권 확인에 핵심적이다."},"생존 이야기":{"method":"카드","code":"196","content":"다윈 가문에서 보존되었으며, 이후 케임브리지 대학교 도서관에 기탁되어 전문적으로 관리되고 있다. 2020년 일부 노트의 분실이 보고되었다가 2022년 반환되었다.","connection":"기록물의 분실과 회수 경험은 보안 관리(security management)의 중요성을 보여준다. 기록물 소장 현황의 지속적 점검은 기록관리의 기본 업무이다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"진화론이라는 과학적 혁명의 전 과정을 증거하는 기록물로, 과학사의 핵심 자료이다. 2025년 유네스코 세계기록유산에 등재되었다.","connection":"과학 기록물의 학술적·역사적 가치가 세계적으로 인정받은 사례이다."},"현재 보존 방법":{"method":"카드","code":"256","content":"케임브리지 대학교 도서관에 핵심 기록물이 소장되어 있다. 영국 자연사박물관, 다운 하우스(다윈의 자택) 등에도 관련 자료가 분산 보존되어 있다.","connection":"분산 소장된 개인 기록물의 통합적 지적 통제는 기관 간 협력을 통해 실현된다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"Darwin Correspondence Project 웹사이트에서 다윈의 서신을 온라인으로 열람할 수 있다. 케임브리지 대학교 디지털 도서관에서 원고 이미지를 제공한다.","connection":"대규모 서신 컬렉션의 디지털화와 온라인 서비스는 기록정보서비스의 우수 사례이다."}}},{"no":37,"category":"영국","name":"실버맨: 파나마 운하 노동자 기록","country":"영국","year":2011,"difficulty":4,"items":{"생산 배경":{"method":"웹제공","code":"","content":"파나마 운하 건설에 참여한 카리브해 출신 노동자들의 고용·급여·의료 기록이다. 19세기 말~20세기 초 파나마 운하 건설 과정에서 생산된 행정 기록물이다. 제국주의 시대 대규모 공사에 동원된 이주 노동자의 삶을 증거하는 기록이다.","connection":"노동 기록물의 생산 배경은 당시의 경제적·사회적 구조와 밀접하게 관련되어 있다. 기록물이 소외된 집단의 역사를 복원하는 데 기여하는 사례이다."},"생산 방법":{"method":"카드","code":"215","content":"고용 계약서, 급여 대장, 의료 기록, 사진 등으로 구성되어 있다. 파나마 운하 관리국(미국 주도)과 영국 식민지 당국에서 생산한 행정 기록이다.","connection":"복수의 행정 기관에서 생산된 노동 기록물의 통합 관리는 다원적 출처 관리의 과제이다."},"생존 이야기":{"method":"카드","code":"135","content":"영국 국립문서관과 바베이도스, 자메이카 등 카리브해 국가의 문서관에 분산 보존되어 있다. 일부 기록은 습기와 곤충 피해로 훼손되었으나 보존 처리가 이루어졌다.","connection":"열대 기후 지역의 기록물 보존은 환경적 도전에 대한 특수한 대응이 필요하다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"제국주의 시대 이주 노동의 실상을 증거하는 기록물로, 카리브해 디아스포라의 역사를 복원하는 핵심 자료이다. 2011년 유네스코 세계기록유산에 등재되었다.","connection":"소외된 집단의 기록물에 대한 가치 재평가는 기록관리의 포용적 가치를 실현하는 사례이다."},"현재 보존 방법":{"method":"카드","code":"253","content":"영국 국립문서관과 카리브해 각국 문서관에 분산 소장되어 있다. 디지털화 사업이 진행되고 있다.","connection":"국제적으로 분산된 기록물의 협력적 보존은 기록관리의 국제 연대를 필요로 한다."},"접근·열람 방법":{"method":"카드","code":"189","content":"영국 국립문서관에서 열람 가능하며, 디지털화된 자료는 온라인으로 검색할 수 있다.","connection":"다국적 기록물에 대한 통합 접근 서비스는 국제 기록관리 협력의 성과이다."}}},{"no":38,"category":"영국","name":"전쟁 속 어린이 그림과 글","country":"다국적","year":2025,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"제1차 및 제2차 세계대전 시기에 전쟁을 경험한 어린이들이 그린 그림과 작성한 글이다. 전쟁의 공포, 피난 생활, 가족에 대한 그리움 등을 어린이의 시각에서 기록한 자료이다. 다국적 출처의 기록물로, 전쟁이 어린이에게 미친 영향을 증거한다.","connection":"어린이의 기록이 역사적 증거로서의 가치를 인정받은 사례로, 기록 생산자의 연령이나 지위에 관계없이 기록의 가치가 평가될 수 있음을 보여준다."},"생산 방법":{"method":"웹제공","code":"","content":"어린이들이 직접 그린 그림과 작성한 편지, 일기 등으로 구성되어 있다. 크레용, 연필, 수채화 등 다양한 재료로 제작되었으며, 여러 나라의 어린이들이 생산한 기록이다.","connection":"비전문가(어린이)의 기록물이 가지는 독특한 증거적 가치를 인정하는 것은 기록관리의 포용적 관점을 보여준다."},"생존 이야기":{"method":"카드","code":"173","content":"각국의 학교, 구호 단체, 개인 소장자 등에 의해 보존되어 왔다. 이후 박물관과 아카이브에 수집·기탁되어 체계적으로 보존되고 있다.","connection":"분산 수집된 기록물의 통합적 기술과 관리는 기록관리의 도전적 과제이다."},"기록문화적 가치":{"method":"카드","code":"151","content":"전쟁이 어린이에게 미친 영향을 직접적으로 보여주는 유일한 기록물이다. 평화와 인권 교육의 핵심 자료이며, 2025년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 인도주의적·교육적 가치가 평가의 핵심 기준이 된 사례이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"각국의 전쟁 기념관, 박물관, 기록관 등에 분산 소장되어 있다. 디지털화와 온라인 전시가 진행되고 있다.","connection":"다국적 분산 기록물의 협력적 보존과 가상 통합은 디지털 기록관리의 과제이다."},"접근·열람 방법":{"method":"카드","code":"230","content":"각국의 소장 기관에서 전시를 관람할 수 있다. 온라인 전시를 통해 디지털 이미지를 열람할 수 있다.","connection":"다국적 기록물에 대한 가상 전시(virtual exhibition)는 기록정보서비스의 국제적 협력 모델이다."}}},{"no":39,"category":"중국","name":"갑골문자","country":"중국","year":2017,"difficulty":3,"items":{"생산 배경":{"method":"카드","code":"164","content":"기원전 14세기~기원전 11세기경 상(殷)나라 시대에 점복(占卜) 목적으로 거북 껍데기와 소 뼈에 새긴 문자이다. 왕실의 제사, 전쟁, 기후, 농업 등에 관한 점복 기록이다. 현재까지 알려진 중국 최고(最古)의 체계적 문자 기록이다.","connection":"종교적·행정적 목적에서 생산된 기록물이 문자학적·역사적 가치를 획득한 사례이다. 기록의 원래 목적과 후대의 가치 평가 사이의 괴리는 기록 평가의 중요한 논점이다."},"생산 방법":{"method":"웹제공","code":"","content":"거북 등껍데기(갑)와 소의 어깨뼈(골)에 날카로운 도구로 문자를 새겼다. 점복의 질문, 점복 결과, 검증 내용이 기록되어 있다. 약 15만 편의 갑골이 발견되었으며, 4,500여 개의 문자가 확인되었다.","connection":"비일반적 매체(뼈, 껍데기)에 기록된 기록물의 관리는 매체의 물리적 특성에 대한 전문적 이해를 요구한다."},"생존 이야기":{"method":"웹제공","code":"","content":"1899년 하남성 안양에서 최초로 발견되었다. 이후 체계적인 발굴이 이루어졌으나, 초기에 약재로 소비되거나 해외로 유출된 것도 있다. 현재 중국 각지의 박물관과 연구 기관에 분산 소장되어 있다.","connection":"기록물의 초기 발견 과정에서의 훼손과 유출은 기록물 관리의 사전적 보호 체계의 중요성을 보여준다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"중국 문자의 기원을 증명하는 기록물로, 동아시아 문명사 연구의 핵심 자료이다. 2017년 유네스코 세계기록유산에 등재되었다.","connection":"문자 기록물의 문명사적 가치가 평가의 핵심 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"159","content":"중국 국가박물관, 고궁박물원, 중국사회과학원 역사연구소 등에 분산 소장되어 있다. 항온·항습 시설에서 보존된다.","connection":"고대 유기물 기록의 보존은 매체의 물리적 특성(뼈의 열화)에 대한 전문적 보존 처리가 필요하다."},"접근·열람 방법":{"method":"카드","code":"130","content":"중국 국가박물관과 안양의 은허 유적지 박물관에서 관람할 수 있다. 디지털 갑골문 데이터베이스가 구축되어 연구자에게 제공된다.","connection":"고대 기록물의 데이터베이스화는 학술 연구를 위한 기록정보서비스의 전문적 형태이다."}}},{"no":40,"category":"중국","name":"청나라 과거시험 금방","country":"중국","year":2005,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"청나라 시기(1644~1905) 과거시험의 최종 합격자 명단인 금방(金榜)이다. 황제가 직접 승인한 과거시험 최종 합격자의 공식 발표 문서이다. 인재 등용을 위한 관료 선발 제도의 공식 기록이다.","connection":"관료 선발 제도의 공식 기록물은 인사 기록(personnel records)의 역사적 원형이다. 기록의 행정적 목적과 역사적 가치가 동시에 인정되는 사례이다."},"생산 방법":{"method":"카드","code":"144","content":"황색 비단에 붉은 글씨로 작성되었으며, 황제의 어인(御印)이 날인되어 있다. 합격자의 이름, 출신지, 순위 등이 기재되어 있다.","connection":"공식 인증 기록물의 물리적 특성(비단, 어인)은 기록의 진본성을 보장하는 물리적 장치이다."},"생존 이야기":{"method":"카드","code":"206","content":"청나라 멸망 이후 중국 제1역사당안관에서 체계적으로 보존되어 왔다. 일부 금방은 전란 중 소실되었으나, 대부분이 현존한다.","connection":"왕조 기록물의 체제 전환 후 보존은 기록관리의 연속성 확보 과제이다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"약 260년간의 관료 선발 기록으로, 중국 관료제 역사와 사회 이동성 연구의 핵심 자료이다. 2005년 유네스코 세계기록유산에 등재되었다.","connection":"행정 기록물의 역사적·사회학적 가치를 평가한 사례이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"베이징의 중국 제1역사당안관에 소장되어 있다. 전문적인 보존 환경에서 관리되며, 디지털화가 진행되고 있다.","connection":"왕조 기록물 전문 보관 기관의 운영은 특수 기록물 관리의 모범 사례이다."},"접근·열람 방법":{"method":"카드","code":"104","content":"중국 제1역사당안관에서 연구 목적의 열람이 가능하다. 일부 디지털화된 자료가 온라인으로 제공된다.","connection":"역사적 행정 기록물에 대한 학술적 접근 서비스는 기록관의 연구 지원 기능이다."}}},{"no":41,"category":"중국","name":"나시족 동바 문자","country":"중국","year":2003,"difficulty":3,"items":{"생산 배경":{"method":"카드","code":"233","content":"중국 윈난성 나시족이 사용해 온 동바 문자의 기록물이다. 동바 문자는 세계에서 유일하게 현재까지 사용되고 있는 상형문자 체계이다. 나시족의 종교 의식, 역사, 문화를 기록하기 위해 동바(제사장)들이 생산한 기록이다.","connection":"소수민족의 고유 문자 기록물은 문화 다양성 보존의 관점에서 기록관리의 중요한 대상이다. 기록의 생산 주체(동바)와 기록 공동체의 관계를 이해하는 것이 출처 파악에 필수적이다."},"생산 방법":{"method":"웹제공","code":"","content":"동바(제사장)가 수제 종이에 동바 문자로 작성한 경전과 의식서이다. 약 1,400개의 상형문자로 구성된 독자적 문자 체계를 사용하였다. 종교 의식의 절차, 신화, 역사 등이 기록되어 있다.","connection":"독자적 문자 체계로 작성된 기록물의 판독과 해석은 전문적 역량을 요구하며, 기록물의 지적 접근성 확보에 특수한 과제를 수반한다."},"생존 이야기":{"method":"카드","code":"172","content":"나시족 공동체와 동바 제사장들이 대대로 전승해 왔다. 문화대혁명 시기에 많은 동바 경전이 훼손·소실되었으나, 일부가 보존되어 현존한다.","connection":"정치적 격변에 의한 기록물 훼손은 기록 보존의 정치적 위험을 보여준다. 소수민족 기록물의 보존은 문화적 다양성 보호와 직결된다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"세계에서 유일하게 현용되는 상형문자의 기록으로, 인류 문자 발전사의 독보적 증거이다. 2003년 유네스코 세계기록유산에 등재되었다.","connection":"소수민족 기록물의 문화적·학술적 가치가 세계적으로 인정받은 사례이다."},"현재 보존 방법":{"method":"카드","code":"227","content":"윈난성 리장의 동바문화연구원에 핵심 자료가 소장되어 있다. 중국 국가도서관에도 관련 자료가 보존되어 있다.","connection":"소수민족 기록물의 보존은 해당 공동체와의 협력이 필수적이며, 지역 기록관의 역할이 중요하다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"리장 동바문화박물관에서 관련 전시를 관람할 수 있다. 동바문화연구원에서 연구 목적의 열람이 가능하다.","connection":"소수민족 기록물에 대한 접근은 공동체의 문화적 권리를 존중하면서 학술적 활용을 지원해야 한다."}}},{"no":42,"category":"중국","name":"양스레이 건축 도면","country":"중국","year":2007,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"중국 상하이에서 활동한 헝가리 건축가 라슬로 후데츠(양스레이)가 1930~40년대에 설계한 건축 도면 기록물이다. 상하이의 근대 건축물 설계 과정을 보여주는 기록이며, 동서양 건축 양식의 융합을 증거한다.","connection":"건축 도면은 건축물의 설계 의도와 기술적 세부를 기록한 전문 기록물이다. 기록물의 출처(생산자)가 국적과 활동 지역이 다른 경우 다문화적 맥락의 분석이 필요하다."},"생산 방법":{"method":"웹제공","code":"","content":"건축 설계 도면, 시방서, 공사 관련 서신 등으로 구성되어 있다. 아르데코, 모더니즘 등 다양한 양식의 건축 설계가 포함되어 있다.","connection":"건축 도면의 관리는 대형 도면 자료의 물리적 보존과 디지털 변환에 전문적 기술이 요구된다."},"생존 이야기":{"method":"카드","code":"262","content":"상하이시 기록관(上海市档案馆)에서 보존되어 왔다. 문화대혁명 시기를 거치면서도 보존된 기록이다.","connection":"정치적 격변기의 기록 보존은 기록관리 체계의 안정성과 회복력(resilience)을 보여준다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"동서양 문화 교류의 건축적 증거로, 상하이 근대사와 국제 건축사 연구의 핵심 자료이다. 2007년 유네스코 세계기록유산에 등재되었다.","connection":"전문 기록물(건축 도면)의 역사적·문화적 가치가 평가 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"170","content":"상하이시 기록관에 소장되어 있으며, 디지털화가 진행되어 있다.","connection":"대형 도면 기록물의 디지털화는 원본 보존과 접근성 확보를 동시에 달성하는 전략이다."},"접근·열람 방법":{"method":"카드","code":"194","content":"상하이시 기록관에서 연구 목적의 열람이 가능하다. 일부 디지털 자료가 온라인으로 제공된다.","connection":"전문 기록물에 대한 연구자 접근 서비스는 기록관의 전문적 기능이다."}}},{"no":43,"category":"중국","name":"난징대학살 기록물","country":"중국","year":2015,"difficulty":4,"items":{"생산 배경":{"method":"카드","code":"109","content":"1937년 12월 일본군이 중국 난징을 점령한 후 자행한 대규모 학살과 관련된 기록물이다. 군사 문서, 외국인 목격자 증언, 사진, 영상, 피해자 증언 등으로 구성된다. 전쟁 범죄의 진상을 기록하고 보존하기 위한 목적에서 수집·정리되었다.","connection":"전쟁 범죄 기록물의 수집과 보존은 역사적 진실 규명과 평화 교육을 위한 기록관리의 사회적 책임이다."},"생산 방법":{"method":"카드","code":"127","content":"일본군 군사 문서, 당시 난징에 체류하던 외국인(미국인·독일인 등)의 일기와 서신, 적십자 보고서, 극동국제군사재판 기록, 피해자 구술 증언 등으로 구성되어 있다.","connection":"가해 측, 목격자, 피해자 등 다양한 출처의 기록물을 종합적으로 관리하는 것은 기록의 다원적 출처 관리와 공정성 확보의 과제이다."},"생존 이야기":{"method":"웹제공","code":"","content":"전후 극동국제군사재판 과정에서 증거로 제출되어 보존되었다. 중국 측 기록물은 난징대학살기념관에서, 국제 기록은 각국의 문서관에서 보존되어 왔다.","connection":"재판 기록물의 보존은 법적 증거로서의 기록의 기능을 보여주며, 기록의 증거적 가치(evidential value)를 극대화한 사례이다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"제2차 세계대전 중 전쟁 범죄의 진상을 증명하는 핵심 기록물이다. 2015년 유네스코 세계기록유산에 등재되었으며, 평화와 인권 교육의 자료로 활용된다.","connection":"전쟁 범죄 기록물의 보존은 기록관리의 인도주의적 가치를 실현하는 사례이다."},"현재 보존 방법":{"method":"카드","code":"143","content":"중국 난징의 침화일군난징대도살우난동포기념관(난징대학살기념관)에 핵심 자료가 소장되어 있다. 미국, 독일 등의 문서관에도 관련 기록이 보존되어 있다.","connection":"국제적으로 분산된 전쟁 범죄 기록물의 통합적 관리는 국제 기록관리 협력의 과제이다."},"접근·열람 방법":{"method":"카드","code":"241","content":"난징대학살기념관에서 상시 전시와 열람 서비스를 제공하고 있다. 관련 디지털 자료가 온라인으로 공개되어 있다.","connection":"전쟁 범죄 기록물에 대한 공개는 역사 교육과 평화 구축에 기여하는 기록정보서비스의 역할이다."}}},{"no":44,"category":"중국","name":"쑤저우 실크 기록물","country":"중국","year":2017,"difficulty":3,"items":{"생산 배경":{"method":"카드","code":"225","content":"중국 쑤저우(소주) 지역의 실크 생산과 관련된 역사적 기록물이다. 명·청 시대의 비단 제직 기술, 무역 기록, 직물 견본 등이 포함된다. 전통 산업의 기술과 경제 활동을 체계적으로 기록한 자료이다.","connection":"산업·기술 기록물의 생산 배경은 당시의 경제적·기술적 맥락과 밀접하게 관련되어 있다. 전통 산업 기록의 보존은 무형문화유산의 유형적 증거를 확보하는 과정이다."},"생산 방법":{"method":"웹제공","code":"","content":"직물 견본 책, 제직 기법 도해, 무역 장부, 관청의 직조 관리 문서 등으로 구성되어 있다. 비단의 종류, 문양, 색채 등이 상세히 기록되어 있다.","connection":"기술 기록물(technical records)의 관리는 기록의 물리적 특성(직물 견본)과 문서 기록의 통합 관리를 요구한다."},"생존 이야기":{"method":"웹제공","code":"","content":"쑤저우 시 기록관과 관련 박물관에서 보존되어 왔다. 일부 기록은 전란과 정치적 격변을 거치면서 소실되었으나, 핵심 자료가 현존한다.","connection":"산업 기록물의 장기 보존은 경제사·기술사 연구를 위한 기록관리의 중요한 과제이다."},"기록문화적 가치":{"method":"카드","code":"178","content":"중국 전통 직조 기술과 실크 무역의 역사를 증명하는 기록물이다. 2017년 유네스코 세계기록유산에 등재되었다.","connection":"산업·기술 기록물의 경제사적·문화적 가치가 평가 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"213","content":"쑤저우 시 기록관과 쑤저우 실크박물관에 소장되어 있다. 보존 처리와 디지털화가 진행되어 있다.","connection":"직물 견본과 같은 특수 매체 기록물의 보존은 전문적 보존 기술을 요구한다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"쑤저우 실크박물관에서 관련 전시를 관람할 수 있다. 연구 목적의 열람이 기록관에서 가능하다.","connection":"산업 기록물의 공개 서비스는 기술 역사 연구와 전통 산업 진흥에 기여한다."}}},{"no":45,"category":"중국","name":"증후을 편종","country":"중국","year":2025,"difficulty":4,"items":{"생산 배경":{"method":"웹제공","code":"","content":"기원전 5세기경 중국 전국시대 증(曾)나라 증후을의 무덤에서 출토된 대규모 편종 악기 세트와 관련 기록이다. 65개의 청동 종으로 구성되어 있으며, 종 표면에 음악 이론과 악기 조율에 관한 2,800여 자의 명문(銘文)이 새겨져 있다.","connection":"악기 자체에 새겨진 문자 기록은 기록 매체의 다양성을 보여주는 사례이다. 기록물의 물리적 형태와 기록 내용이 불가분의 관계에 있는 경우이다."},"생산 방법":{"method":"카드","code":"145","content":"청동 주조 기술로 종을 제작하고, 표면에 금속 도구로 명문을 새겼다. 음악적 음계, 각 종의 음높이, 타 국가의 음악 체계와의 대응 관계 등이 기록되어 있다.","connection":"비문서 매체(청동기)에 새겨진 기록의 관리는 기록물의 물리적 특성에 대한 전문적 이해를 요구한다. 기록 매체와 기록 내용의 불가분적 관계를 관리하는 것이 과제이다."},"생존 이야기":{"method":"카드","code":"232","content":"기원전 433년경 매장된 이후 1978년 발굴될 때까지 약 2,400년간 지하에서 보존되었다. 발굴 이후 체계적인 보존 처리가 이루어졌다.","connection":"매장에 의한 비의도적 보존과 발굴 후의 체계적 보존 관리의 전환은 기록물의 소장 이력에서 독특한 사례이다."},"기록문화적 가치":{"method":"카드","code":"180","content":"고대 중국의 음악 이론과 청동 주조 기술을 동시에 증명하는 기록물이다. 2025년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 음악적·기술적·역사적 가치가 다층적으로 평가된 사례이다."},"현재 보존 방법":{"method":"카드","code":"155","content":"후베이성 박물관(우한)에 소장되어 있으며, 항온·항습 전시 환경에서 관리된다. 복제본이 제작되어 연주에 사용되기도 한다.","connection":"복제본 제작을 통한 원본 보호와 활용의 병행은 기록관리의 보존-접근 균형 전략이다."},"접근·열람 방법":{"method":"웹제공","code":"","content":"후베이성 박물관에서 원본을 상시 관람할 수 있으며, 복제본 연주 시연도 이루어진다. 디지털 이미지와 음원이 온라인으로 제공된다.","connection":"복제본을 활용한 체험적 접근은 기록정보서비스의 확장된 형태이다."}}},{"no":46,"category":"기타 국가","name":"수에즈 운하 기록물","country":"이집트","year":2017,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"1858년부터 1869년까지 수에즈 운하 건설 과정에서 생산된 기록물이다. 설계 도면, 공사 보고서, 재정 문서, 외교 서신, 사진 등이 포함된다. 19세기 최대의 토목 공사이자 국제 정치의 산물인 수에즈 운하의 건설 과정을 증거한다.","connection":"대규모 인프라 사업의 기록물은 기술사·외교사·경제사 연구의 복합적 자료이다. 기록의 생산 배경이 국제 정치적 맥락과 밀접하게 연결된 사례이다."},"생산 방법":{"method":"웹제공","code":"","content":"프랑스인 페르디낭 드 레셉스가 주도한 수에즈 운하 회사에서 생산한 공식 문서이다. 설계 도면, 공사 일지, 재정 보고서, 이집트·프랑스·영국 정부와의 외교 서신 등으로 구성되어 있다.","connection":"국제적 사업 기록물의 다국적 생산 주체를 파악하는 것은 출처원칙 적용의 복잡한 사례이다."},"생존 이야기":{"method":"카드","code":"111","content":"이집트 수에즈 운하청과 프랑스의 관련 기관에서 분산 보존되어 왔다. 여러 차례의 정치적 변동(국유화 등)에도 불구하고 보존되었다.","connection":"국제 사업 기록물의 소유권 변동과 보존 연속성의 확보는 기록관리의 도전적 과제이다."},"기록문화적 가치":{"method":"카드","code":"184","content":"19세기 최대의 토목 공사 기록이자, 국제 정치·경제 관계의 역사적 증거이다. 2017년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 기술적·정치적·경제적 가치가 복합적으로 평가된 사례이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"이집트 수에즈 운하청 아카이브와 카이로의 국립문서관에 소장되어 있다. 프랑스 측 기록은 프랑스 국립문서관 등에 보존되어 있다.","connection":"양국에 분산된 사업 기록물의 통합적 관리를 위한 국제 협력이 필요하다."},"접근·열람 방법":{"method":"카드","code":"223","content":"수에즈 운하 박물관(이스마일리아)에서 관련 전시를 관람할 수 있다. 일부 기록물이 디지털화되어 온라인으로 제공된다.","connection":"국제 사업 기록물에 대한 다국적 접근 서비스는 기록관리의 국제 협력을 통해 실현된다."}}},{"no":47,"category":"기타 국가","name":"이슬람 천문학 기록","country":"이집트","year":2025,"difficulty":3,"items":{"생산 배경":{"method":"웹제공","code":"","content":"이슬람 문명권에서 생산된 천문학 관련 기록물로, 중세 이슬람 학자들의 천체 관측 기록, 천문표, 기구 설계 도면 등이 포함된다. 그리스 천문학을 계승·발전시킨 이슬람 천문학의 성과를 기록한 자료이다.","connection":"학술 기록물의 생산 배경은 당시의 과학적·문화적 맥락과 밀접하게 관련되어 있다. 문명 간 지식 전수의 기록은 기록의 맥락 분석에서 중요한 요소이다."},"생산 방법":{"method":"웹제공","code":"","content":"아랍어로 작성된 천문표, 관측 기록, 아스트롤라베(천체관측기구) 설계 도면, 학술 논문 등으로 구성되어 있다. 바그다드, 카이로 등 이슬람 문명의 학술 중심지에서 생산되었다.","connection":"학술 기록물의 생산 기관(학술 중심지)과 생산자(학자)의 파악은 출처원칙 적용의 기본이다."},"생존 이야기":{"method":"카드","code":"156","content":"이집트 국립도서관(다르 알쿠투브), 카이로의 알아즈하르 대학 도서관 등에서 보존되어 왔다. 일부 기록은 중세부터 현대까지 수백 년간 연속적으로 보존되었다.","connection":"학술 기록물의 장기 보존은 학문적 전통의 연속성을 보장하는 기록관리의 역할을 보여준다."},"기록문화적 가치":{"method":"웹제공","code":"","content":"이슬람 천문학이 유럽 르네상스 과학에 미친 영향을 증명하는 기록물이다. 2025년 유네스코 세계기록유산에 등재되었다.","connection":"문명 간 지식 교류의 기록적 증거가 가치 평가의 핵심 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"119","content":"이집트 국립도서관, 알아즈하르 대학 도서관 등에 소장되어 있다. 전문적 보존 환경에서 관리되며, 디지털화가 진행 중이다.","connection":"고문서의 디지털화는 원본 보존과 학술적 접근성 확대를 동시에 달성하는 전략이다."},"접근·열람 방법":{"method":"카드","code":"187","content":"이집트 국립도서관에서 연구 목적의 열람이 가능하다. 디지털화된 자료가 온라인으로 제공되기 시작하고 있다.","connection":"이슬람 문명 기록물에 대한 국제적 접근 서비스 확대는 기록관리의 문명 간 협력 과제이다."}}},{"no":48,"category":"기타 국가","name":"바가바드기타","country":"인도","year":2025,"difficulty":5,"items":{"생산 배경":{"method":"웹제공","code":"","content":"고대 인도의 서사시 마하바라타에 포함된 바가바드기타의 필사본 기록물이다. 힌두교의 핵심 경전으로, 의무, 도덕, 영성에 관한 철학적 대화를 담고 있다. 종교적·철학적 가르침을 문자로 기록하여 전승하기 위한 목적에서 필사되었다.","connection":"종교 경전의 필사 전통은 기록의 복제를 통한 보존과 전파라는 기록관리의 근본적 기능을 보여준다."},"생산 방법":{"method":"카드","code":"240","content":"산스크리트어로 작성된 필사본이다. 야자수 잎(패엽)과 종이에 필사된 다양한 시기의 사본이 존재한다. 18장(章) 700절로 구성되어 있다.","connection":"다양한 시기의 필사본 관리는 판본학적 분석과 기록물 기술의 전문적 영역이다. 매체(패엽, 종이)에 따른 차별화된 보존이 필요하다."},"생존 이야기":{"method":"카드","code":"257","content":"수천 년에 걸쳐 필사 전통을 통해 전승되어 왔다. 인도 각지의 사원, 도서관, 대학에 다양한 시기의 필사본이 분산 보존되어 있다.","connection":"필사 전통에 의한 기록의 연속적 복제는 원시적 형태의 분산보존 전략이라 할 수 있다."},"기록문화적 가치":{"method":"카드","code":"201","content":"인류의 철학적·종교적 사유의 정수를 담은 기록물이다. 2025년 유네스코 세계기록유산에 등재되었다.","connection":"종교·철학 기록물의 보편적 인류적 가치가 평가 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"118","content":"인도 국립문서관, 바나라스 힌두대학, 각지의 사원 도서관 등에 다양한 필사본이 분산 소장되어 있다. 주요 필사본의 디지털화가 진행되고 있다.","connection":"분산 소장된 종교 기록물의 통합적 서지 관리는 기록관리의 과제이다."},"접근·열람 방법":{"method":"카드","code":"122","content":"인도 국립문서관과 주요 대학 도서관에서 연구 목적의 열람이 가능하다. 디지털화된 일부 필사본이 온라인으로 공개되어 있다.","connection":"종교 기록물에 대한 접근은 학술적 연구 지원과 종교적 존중의 균형이 필요하다."}}},{"no":49,"category":"기타 국가","name":"나트야샤스트라","country":"인도","year":2025,"difficulty":4,"items":{"생산 배경":{"method":"카드","code":"108","content":"고대 인도의 연극·무용·음악 이론서인 나트야샤스트라의 필사본 기록물이다. 기원전 2세기~기원후 2세기경 바라타 무니가 저술한 것으로 추정된다. 공연 예술의 이론과 실제를 체계적으로 기록한 세계 최초의 종합 예술 이론서이다.","connection":"공연 예술의 이론을 문자로 기록한 것은 무형의 지식을 유형의 기록으로 전환한 사례이다. 기록화(documentation)의 역사적 원형을 보여준다."},"생산 방법":{"method":"웹제공","code":"","content":"산스크리트어로 작성된 필사본이다. 36장(章)으로 구성되어 연극의 구성, 배우의 연기, 무대 설계, 음악, 무용 등을 포괄적으로 다루고 있다.","connection":"종합적 이론서의 체계적 구성은 지식의 분류와 기록의 구조화라는 기록관리의 원칙과 일치한다."},"생존 이야기":{"method":"웹제공","code":"","content":"필사 전통을 통해 수천 년간 전승되어 왔다. 인도 각지의 학술 기관과 도서관에 다양한 시기의 필사본이 보존되어 있다.","connection":"필사 전승에 의한 기록의 보존은 복제(replication)를 통한 기록 보존의 전통적 방식이다."},"기록문화적 가치":{"method":"카드","code":"140","content":"세계 최초의 종합 공연 예술 이론서로, 인도 문화와 예술 연구의 핵심 자료이다. 2025년 유네스코 세계기록유산에 등재되었다.","connection":"예술 이론 기록물의 학술적·문화적 가치가 평가 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"158","content":"인도 국립문서관, 바나라스 힌두대학, 동양학 연구소 등에 필사본이 분산 소장되어 있다.","connection":"고대 필사본의 보존은 매체(패엽, 수제 종이)의 물리적 특성에 맞는 전문적 보존 환경이 요구된다."},"접근·열람 방법":{"method":"카드","code":"209","content":"주요 대학 도서관과 연구소에서 연구 목적의 열람이 가능하다. 일부 디지털화된 필사본이 온라인으로 공개되어 있다.","connection":"고대 예술 기록물에 대한 학술적 접근 서비스는 기록관의 연구 지원 기능의 전문적 형태이다."}}},{"no":50,"category":"기타 국가","name":"정화의 삼국어 비석","country":"스리랑카","year":2025,"difficulty":4,"items":{"생산 배경":{"method":"웹제공","code":"","content":"1411년 명나라의 항해가 정화(鄭和)가 스리랑카 갈레에 세운 삼국어(중국어·타밀어·페르시아어) 비석이다. 명나라의 해상 원정과 스리랑카와의 외교 관계를 기록하고 있다. 동서양 문명 교류의 증거로서 생산된 외교적 기록물이다.","connection":"다국어 기록물의 생산은 다문화적 소통의 기록화 사례이다. 기록의 언어적 다양성은 기록물 기술(description)에서 접근점(access point) 설정의 중요한 요소이다."},"생산 방법":{"method":"카드","code":"219","content":"석재에 중국어, 타밀어, 페르시아어 세 가지 언어로 새긴 비문이다. 각 언어 부분의 내용은 정확히 동일하지 않으며, 각 문화권에 맞는 메시지를 담고 있다.","connection":"동일 기록물 내 언어별 내용 차이의 분석은 기록물 기술의 전문적 과제이다. 다국어 기록물의 번역과 대조는 기록의 정확한 이해에 필수적이다."},"생존 이야기":{"method":"웹제공","code":"","content":"스리랑카 갈레에서 1911년 발견되었으며, 현재 콜롬보 국립박물관에 소장되어 있다. 석재라는 매체의 특성상 비교적 양호한 상태로 보존되었다.","connection":"석재 기록물의 내구성은 매체 선택이 기록의 장기 보존에 미치는 영향을 보여주는 사례이다."},"기록문화적 가치":{"method":"카드","code":"222","content":"15세기 동서양 해상 교류와 다문화 외교의 증거로, 세계사의 연결성을 보여주는 기록물이다. 2025년 유네스코 세계기록유산에 등재되었다.","connection":"다문화 교류 기록물의 세계사적 가치가 평가 기준이 된 사례이다."},"현재 보존 방법":{"method":"카드","code":"203","content":"스리랑카 콜롬보 국립박물관에 소장되어 있다. 석재 보존을 위한 환경 관리가 이루어지고 있다.","connection":"석재 기록물의 보존은 풍화와 오염으로부터의 보호가 핵심 과제이다."},"접근·열람 방법":{"method":"카드","code":"242","content":"콜롬보 국립박물관에서 원본을 상시 관람할 수 있다. 관련 연구 자료가 온라인으로 공개되어 있다.","connection":"해외 소재 한국 관련 기록물과 유사하게, 기록물 소재국과 관련국 간의 정보 공유가 필요하다."}}},{"no":51,"category":"기타 국가","name":"진실화해위원회 기록","country":"캐나다","year":2025,"difficulty":3,"items":{"생산 배경":{"method":"카드","code":"263","content":"캐나다 진실화해위원회(TRC, 2008~2015)가 수집한 원주민 기숙학교(Indian Residential Schools) 관련 기록물이다. 19세기 말부터 20세기 말까지 운영된 원주민 기숙학교에서의 강제 동화 정책과 인권 침해에 관한 기록이다.","connection":"진실화해위원회의 기록 수집은 기록관리가 사회 정의와 화해에 기여하는 대표적 사례이다. 기록의 사회적 기능(accountability)을 보여준다."},"생산 방법":{"method":"웹제공","code":"","content":"정부 정책 문서, 학교 운영 기록, 학생 명부, 생존자 구술 증언(7,000명 이상), 사진, 교회 기록 등으로 구성되어 있다. 가해 기관(정부·교회)과 피해자(원주민) 양측의 기록이 포함된다.","connection":"구술 증언의 대규모 수집과 관리는 구술 기록(oral records) 관리의 전문적 사례이다. 다양한 출처의 기록물 통합 관리가 필요하다."},"생존 이야기":{"method":"웹제공","code":"","content":"진실화해위원회 활동 기간 중 체계적으로 수집·정리되었다. 위원회 종료 후 국립진실화해센터(NCTR)로 이관되어 항구적으로 보존되고 있다.","connection":"한시적 기구(위원회)의 기록물을 항구적 보존 기관으로 이관하는 과정은 기록의 생애주기 관리(life cycle management)의 실례이다."},"기록문화적 가치":{"method":"카드","code":"107","content":"원주민에 대한 식민주의적 폭력과 강제 동화의 역사를 증명하는 기록물이다. 사회 정의와 화해를 위한 기록의 역할을 보여주며, 2025년 유네스코 세계기록유산에 등재되었다.","connection":"기록물의 사회 정의적 가치가 평가의 핵심 기준이 된 사례이다. 기록관리의 윤리적 책임을 보여준다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"캐나다 위니펙의 매니토바 대학교 내 국립진실화해센터(NCTR)에 소장되어 있다. 디지털화가 진행되어 있으며, 생존자 증언 녹음·녹화가 체계적으로 보존된다.","connection":"구술 기록 아카이브의 장기 보존은 디지털 보존 전략의 적용이 필수적이다."},"접근·열람 방법":{"method":"카드","code":"192","content":"NCTR에서 연구 목적의 열람이 가능하며, 생존자 증언의 일부는 온라인으로 공개되어 있다. 개인정보 보호를 위한 접근 제한 정책이 적용된다.","connection":"피해자 증언 기록에 대한 접근 정책은 개인정보 보호와 역사적 공개 가치의 균형이 핵심이다."}}},{"no":52,"category":"기타 국가","name":"암파로 재판 기록","country":"멕시코","year":2025,"difficulty":3,"items":{"생산 배경":{"method":"카드","code":"146","content":"1849년 멕시코에서 개인의 헌법적 권리를 보호하기 위해 도입된 암파로(Amparo) 재판 제도와 관련된 기록물이다. 개인이 국가 권력에 의한 기본권 침해에 대해 사법적 구제를 받을 수 있는 법적 절차를 기록한 자료이다.","connection":"법적 제도의 운영 기록은 기록의 법적·행정적 가치(administrative value)가 극대화된 사례이다. 인권 보호 제도의 기록적 증거는 법적 기록관리의 핵심 대상이다."},"생산 방법":{"method":"웹제공","code":"","content":"법원의 재판 기록, 판결문, 소송 서류, 관련 법률 문서 등으로 구성되어 있다. 170년 이상에 걸친 방대한 분량의 사법 기록이다.","connection":"사법 기록물의 체계적 관리는 법원 기록관리(court records management)의 핵심이다. 장기간에 걸친 연속 기록의 관리는 시리즈(series) 관리의 과제이다."},"생존 이야기":{"method":"웹제공","code":"","content":"멕시코 연방 사법부 기록관에서 체계적으로 보존되어 왔다. 170년 이상의 연속적 보존이 이루어지고 있다.","connection":"사법 기록의 장기 연속 보존은 법적 기록관리 체계의 안정성을 보여준다."},"기록문화적 가치":{"method":"카드","code":"126","content":"개인의 헌법적 권리를 사법적으로 보호하는 최초의 제도적 기록으로, 전 세계 인권 보호 법제의 모델이 되었다. 2025년 유네스코 세계기록유산에 등재되었다.","connection":"법적 기록물의 국제적 영향력이 가치 평가의 핵심 기준이 된 사례이다."},"현재 보존 방법":{"method":"웹제공","code":"","content":"멕시코시티의 연방 사법부 기록관(Archivo del Poder Judicial de la Federación)에 소장되어 있다. 디지털화가 진행되어 있다.","connection":"사법 기록의 디지털화는 법적 기록에 대한 접근성 향상과 원본 보존을 동시에 달성하는 전략이다."},"접근·열람 방법":{"method":"카드","code":"102","content":"멕시코 연방 사법부 기록관에서 열람이 가능하다. 일부 판결문은 온라인 데이터베이스를 통해 검색·열람할 수 있다.","connection":"사법 기록에 대한 공개 서비스는 법적 투명성과 시민의 알 권리 보장에 기여한다."}}}];
+
+// === CONSTANTS ===
+const CATEGORIES = [
+  {key:"한국 ① 역사와 전통", label:"한국 ① 역사와 전통", badge:"한국 전통기록 전문가"},
+  {key:"한국 ② 근현대", label:"한국 ② 근현대", badge:"한국 근현대기록 전문가"},
+  {key:"유럽 ① 독일과 주변국", label:"유럽 ① 독일과 주변국", badge:"독일·주변국 기록 전문가"},
+  {key:"유럽 ② 프랑스와 주변국", label:"유럽 ② 프랑스와 주변국", badge:"프랑스·주변국 기록 전문가"},
+  {key:"영국", label:"영국", badge:"영국 기록 전문가"},
+  {key:"중국", label:"중국", badge:"중국 기록 전문가"},
+  {key:"기타 국가", label:"기타 국가", badge:"세계 기록 전문가"}
+];
+
+const INV_LABELS = [
+  {key:"생산 배경", sub:"이 기록은 왜 만들어졌는가?"},
+  {key:"생산 방법", sub:"누가, 어떻게 만들었는가?"},
+  {key:"생존 이야기", sub:"어떻게 현재까지 남게 되었는가?"},
+  {key:"기록문화적 가치", sub:"왜 이 기록이 중요한가?"},
+  {key:"현재 보존 방법", sub:"지금은 어떻게 보존되고 있는가?"},
+  {key:"접근·열람 방법", sub:"일반인이 이 기록을 보려면?"}
+];
+
+const LEVELS = [
+  {min:0, name:"견습 기록관"},
+  {min:2, name:"기록 조사관"},
+  {min:5, name:"기록 분석관"},
+  {min:10, name:"기록 보존관"},
+  {min:20, name:"수석 기록관"},
+  {min:52, name:"기록 수호자"}
+];
+
+// === STATE ===
+let state = {completed:{}, loggedIn:false};
+let currentCategory = "";
+let currentHeritage = null;
+
+function loadState(){
+  try{
+    const s = localStorage.getItem("save_the_record_state");
+    if(s) state = JSON.parse(s);
+  }catch(e){}
+}
+function saveState(){
+  localStorage.setItem("save_the_record_state", JSON.stringify(state));
+}
+
+function getCompletedCount(){
+  return Object.keys(state.completed).length;
+}
+
+function getCompletedItems(no){
+  return state.completed[no] || [];
+}
+
+function isItemCompleted(no, key){
+  return (state.completed[no] || []).includes(key);
+}
+
+function markItemCompleted(no, key){
+  if(!state.completed[no]) state.completed[no] = [];
+  if(!state.completed[no].includes(key)) state.completed[no].push(key);
+  saveState();
+}
+
+function isHeritageComplete(no){
+  return (state.completed[no] || []).length >= 6;
+}
+
+function getCompletedHeritageCount(){
+  let c = 0;
+  for(let no in state.completed){
+    if(state.completed[no].length >= 6) c++;
+  }
+  return c;
+}
+
+function getLevel(){
+  const count = getCompletedHeritageCount();
+  let lvl = 1;
+  for(let i = LEVELS.length - 1; i >= 0; i--){
+    if(count >= LEVELS[i].min){lvl = i + 1; break;}
+  }
+  return lvl;
+}
+
+function getLevelName(){
+  return LEVELS[getLevel()-1].name;
+}
+
+function getCatItems(catKey){
+  return GAME_DATA.filter(d => d.category === catKey);
+}
+
+function isCatComplete(catKey){
+  const items = getCatItems(catKey);
+  return items.length > 0 && items.every(d => isHeritageComplete(d.no));
+}
+
+// === UI HELPERS ===
+function showToast(msg, type, dur){
+  const t = document.createElement("div");
+  t.className = "toast " + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), dur || 2500);
+}
+
+function showOverlay(title, msg){
+  document.getElementById("overlayTitle").textContent = title;
+  document.getElementById("overlayMsg").textContent = msg;
+  document.getElementById("overlay").classList.remove("hidden");
+}
+
+function hideOverlay(){
+  document.getElementById("overlay").classList.add("hidden");
+}
+
+function spawnStars(count){
+  const c = document.getElementById("starsContainer");
+  c.classList.remove("hidden");
+  c.innerHTML = "";
+  for(let i = 0; i < count; i++){
+    const s = document.createElement("div");
+    s.className = "star";
+    s.textContent = "\u2605";
+    s.style.left = (Math.random()*90+5)+"%";
+    s.style.top = (Math.random()*60+10)+"%";
+    s.style.color = ["#FFD700","#FFC107","#FF9800","#E53935","#43A047"][Math.floor(Math.random()*5)];
+    s.style.animationDelay = (Math.random()*0.5)+"s";
+    c.appendChild(s);
+  }
+  setTimeout(()=>{c.classList.add("hidden");c.innerHTML="";}, 1500);
+}
+
+function spawnConfetti(){
+  const c = document.createElement("div");
+  c.className = "celebration";
+  document.body.appendChild(c);
+  const colors = ["#FFD700","#E53935","#43A047","#2196F3","#FF9800","#9C27B0"];
+  for(let i = 0; i < 40; i++){
+    const p = document.createElement("div");
+    p.className = "confetti";
+    p.style.left = (Math.random()*100)+"%";
+    p.style.top = "-10px";
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDelay = (Math.random()*0.8)+"s";
+    p.style.animationDuration = (1+Math.random())+"s";
+    c.appendChild(p);
+  }
+  setTimeout(()=>c.remove(), 2500);
+}
+
+function typewriterEffect(el, text, speed){
+  el.textContent = "";
+  let i = 0;
+  const interval = setInterval(()=>{
+    if(i < text.length){
+      el.textContent += text[i];
+      i++;
+    } else {
+      clearInterval(interval);
+    }
+  }, speed || 15);
+}
+
+// === SCREENS ===
+function hideAll(){
+  ["login","categories","heritageList","report"].forEach(id=>{
+    document.getElementById(id).classList.add("hidden");
+  });
+}
+
+function tryLogin(){
+  const code = document.getElementById("codeInput").value.trim();
+  if(code === "기록문화"){
+    state.loggedIn = true;
+    saveState();
+    showCategories();
+  } else {
+    document.getElementById("loginError").textContent = "코드가 올바르지 않습니다.";
+    document.getElementById("codeInput").classList.add("shake");
+    setTimeout(()=>document.getElementById("codeInput").classList.remove("shake"),400);
+  }
+}
+
+function logout(){
+  state.loggedIn = false;
+  saveState();
+  hideAll();
+  document.getElementById("login").classList.remove("hidden");
+  document.getElementById("codeInput").value = "";
+  document.getElementById("loginError").textContent = "";
+}
+
+function showCategories(){
+  hideAll();
+  document.getElementById("categories").classList.remove("hidden");
+  const lvl = getLevel();
+  const hCount = getCompletedHeritageCount();
+  document.getElementById("levelDisplay").textContent = "Lv."+lvl+" "+getLevelName();
+  document.getElementById("countDisplay").textContent = "완료: "+hCount+"/52건";
+
+  const grid = document.getElementById("catGrid");
+  grid.innerHTML = "";
+  CATEGORIES.forEach(cat=>{
+    const items = getCatItems(cat.key);
+    const done = items.filter(d=>isHeritageComplete(d.no)).length;
+    const btn = document.createElement("button");
+    btn.className = "cat-btn" + (isCatComplete(cat.key)?" completed":"");
+    btn.innerHTML = '<div>'+cat.label+'</div><div class="cat-count">'+done+'/'+items.length+'건 완료</div>';
+    btn.onclick = ()=>showHeritage(cat.key);
+    grid.appendChild(btn);
+  });
+
+  const bl = document.getElementById("badgeList");
+  bl.innerHTML = "";
+  CATEGORIES.forEach(cat=>{
+    const b = document.createElement("div");
+    b.className = "badge-item"+(isCatComplete(cat.key)?" earned":"");
+    b.textContent = cat.badge;
+    bl.appendChild(b);
+  });
+  // Global badge
+  const allDone = CATEGORIES.every(c=>isCatComplete(c.key));
+  const gb = document.createElement("div");
+  gb.className = "badge-item"+(allDone?" earned":"");
+  gb.textContent = "\uD83C\uDF0F 글로벌 아키비스트";
+  bl.appendChild(gb);
+}
+
+function showHeritage(catKey){
+  hideAll();
+  currentCategory = catKey;
+  document.getElementById("heritageList").classList.remove("hidden");
+  document.getElementById("levelDisplay2").textContent = "Lv."+getLevel()+" "+getLevelName();
+  document.getElementById("catTitle").textContent = catKey;
+
+  const list = document.getElementById("hList");
+  list.innerHTML = "";
+  const items = getCatItems(catKey);
+  items.forEach(d=>{
+    const div = document.createElement("div");
+    div.className = "heritage-item";
+    const done = isHeritageComplete(d.no);
+    const doneCount = getCompletedItems(d.no).length;
+    div.innerHTML = '<div class="info"><div class="h-name">'+d.name+'</div><div class="h-meta">'+d.country+' | '+d.year+'년 | '+doneCount+'/6</div></div><div class="'+(done?"check":"pending")+'">'+(done?"\u2713":"\u25CB")+'</div>';
+    div.onclick = ()=>showReport(d.no);
+    list.appendChild(div);
+  });
+}
+
+function showReport(no){
+  hideAll();
+  document.getElementById("report").classList.remove("hidden");
+  currentHeritage = no;
+  const d = GAME_DATA.find(x=>x.no===no);
+  document.getElementById("reportName").textContent = d.name;
+  document.getElementById("reportMeta").textContent = d.country+" | UNESCO "+d.year+"년 등재";
+
+  renderInvList(d);
+}
+
+function renderInvList(d){
+  const doneCount = getCompletedItems(d.no).length;
+  document.getElementById("reportProgress").textContent = doneCount+"/6 완료";
+
+  const list = document.getElementById("invList");
+  list.innerHTML = "";
+
+  INV_LABELS.forEach(inv=>{
+    const item = d.items[inv.key];
+    if(!item) return;
+    const completed = isItemCompleted(d.no, inv.key);
+    const isWeb = item.method === "웹제공";
+
+    const div = document.createElement("div");
+    div.className = "inv-item"+(completed?" completed":"");
+
+    let html = '<div class="inv-label"><span class="status-icon">'+(completed?"\u2713":(isWeb?"\u25C9":"\u25CB"))+'</span> '+inv.key+'</div>';
+    html += '<div class="inv-sublabel">'+inv.sub+'</div>';
+
+    if(isWeb && !completed){
+      // Auto-complete web items on view
+      markItemCompleted(d.no, inv.key);
+      div.className = "inv-item completed";
+      html = '<div class="inv-label"><span class="status-icon">\u2713</span> '+inv.key+'</div>';
+      html += '<div class="inv-sublabel">'+inv.sub+'</div>';
+    }
+
+    if(isWeb || completed){
+      html += '<div class="inv-content" id="content_'+d.no+'_'+inv.key.replace(/[^a-zA-Z가-힣]/g,"")+'">'+item.content+'</div>';
+      if(!isWeb){
+        html += '<div class="inv-connection"><div class="conn-title">\u{1F4D4} Point</div>'+item.connection+'</div>';
+      }
+    } else {
+      html += '<div class="locked-msg">\u{1F512} 카드 코드를 입력하세요</div>';
+      html += '<div class="code-input-area">';
+      html += '<input class="digit-box" type="tel" maxlength="1" data-no="'+d.no+'" data-key="'+inv.key+'" data-pos="0" oninput="digitInput(this)" onkeydown="digitKeydown(event,this)">';
+      html += '<input class="digit-box" type="tel" maxlength="1" data-no="'+d.no+'" data-key="'+inv.key+'" data-pos="1" oninput="digitInput(this)" onkeydown="digitKeydown(event,this)">';
+      html += '<input class="digit-box" type="tel" maxlength="1" data-no="'+d.no+'" data-key="'+inv.key+'" data-pos="2" oninput="digitInput(this)" onkeydown="digitKeydown(event,this)">';
+      html += '<button class="code-submit" onclick="submitCode('+d.no+',\''+inv.key.replace(/'/g,"\\'")+'\')">확인</button>';
+      html += '</div>';
+      html += '<div class="code-error" id="err_'+d.no+'_'+inv.key.replace(/[^a-zA-Z가-힣]/g,"")+'"></div>';
+    }
+
+    div.innerHTML = html;
+    list.appendChild(div);
+  });
+
+  // Check if just completed all web items
+  checkAutoComplete(d);
+}
+
+function checkAutoComplete(d){
+  const doneCount = getCompletedItems(d.no).length;
+  document.getElementById("reportProgress").textContent = doneCount+"/6 완료";
+  if(doneCount >= 6 && !d._celebrated){
+    d._celebrated = true;
+    setTimeout(()=>{
+      spawnConfetti();
+      showCompleteOverlay(d);
+      checkLevelUp(d);
+      checkBadge(d);
+    }, 300);
+  }
+}
+
+function showCompleteOverlay(d){
+  const no = String(d.no).padStart(2,"0");
+  document.getElementById("completeImg").src = "images/"+no+".jpg";
+  document.getElementById("completeImg").alt = d.name;
+  document.getElementById("completeName").textContent = d.name;
+  document.getElementById("completeMeta").textContent = d.country+" | UNESCO 세계기록유산 "+d.year+"년 등재";
+  document.getElementById("completeSource").textContent = "사진 출처: 공공 라이선스 이미지";
+  document.getElementById("completeOverlay").classList.remove("hidden");
+}
+
+function closeComplete(){
+  document.getElementById("completeOverlay").classList.add("hidden");
+  showHeritage(currentCategory);
+}
+
+function digitInput(el){
+  const v = el.value.replace(/[^0-9]/g,"");
+  el.value = v.slice(0,1);
+  if(v.length > 0){
+    const pos = parseInt(el.dataset.pos);
+    const siblings = el.parentElement.querySelectorAll(".digit-box");
+    if(pos < 2) siblings[pos+1].focus();
+  }
+}
+
+function digitKeydown(e, el){
+  if(e.key === "Backspace" && el.value === ""){
+    const pos = parseInt(el.dataset.pos);
+    if(pos > 0){
+      const siblings = el.parentElement.querySelectorAll(".digit-box");
+      siblings[pos-1].focus();
+    }
+  }
+  if(e.key === "Enter"){
+    submitCode(parseInt(el.dataset.no), el.dataset.key);
+  }
+}
+
+function submitCode(no, key){
+  const d = GAME_DATA.find(x=>x.no===no);
+  const item = d.items[key];
+  const area = document.querySelector('.code-input-area');
+  if(!area) return;
+
+  // Find the right code input area
+  const allAreas = document.querySelectorAll('.code-input-area');
+  let targetArea = null;
+  allAreas.forEach(a=>{
+    const inputs = a.querySelectorAll('.digit-box');
+    if(inputs.length && inputs[0].dataset.no == no && inputs[0].dataset.key === key){
+      targetArea = a;
+    }
+  });
+  if(!targetArea) return;
+
+  const digits = targetArea.querySelectorAll(".digit-box");
+  const code = Array.from(digits).map(d=>d.value).join("");
+
+  const errId = "err_"+no+"_"+key.replace(/[^a-zA-Z가-힣]/g,"");
+  const errEl = document.getElementById(errId);
+
+  if(code.length < 3){
+    if(errEl) errEl.textContent = "3자리를 모두 입력하세요.";
+    return;
+  }
+
+  if(code === item.code){
+    markItemCompleted(no, key);
+    if(errEl) errEl.textContent = "";
+    showToast("코드 인증 성공!", "success", 1500);
+    spawnStars(8);
+    renderInvList(d);
+    checkLevelUp(d);
+    checkBadge(d);
+  } else {
+    if(errEl) errEl.textContent = "코드가 틀렸습니다.";
+    targetArea.classList.add("shake");
+    setTimeout(()=>targetArea.classList.remove("shake"),400);
+  }
+}
+
+function checkLevelUp(d){
+  const prevLevel = state._lastLevel || 1;
+  const curLevel = getLevel();
+  if(curLevel > prevLevel){
+    state._lastLevel = curLevel;
+    saveState();
+    setTimeout(()=>{
+      showToast("LEVEL UP! Lv."+curLevel+" "+getLevelName(), "level-up", 3000);
+      spawnStars(15);
+    }, 500);
+  }
+  state._lastLevel = curLevel;
+}
+
+function checkBadge(d){
+  CATEGORIES.forEach(cat=>{
+    if(isCatComplete(cat.key)){
+      const bKey = "badge_"+cat.key;
+      if(!state[bKey]){
+        state[bKey] = true;
+        saveState();
+        setTimeout(()=>{
+          showToast("\u2605 뱃지 획득: "+cat.badge+" \u2605", "badge-earned", 3000);
+          spawnStars(20);
+        }, 800);
+      }
+    }
+  });
+  // Check global
+  const allDone = CATEGORIES.every(c=>isCatComplete(c.key));
+  if(allDone && !state.badge_global){
+    state.badge_global = true;
+    saveState();
+    setTimeout(()=>{
+      showOverlay("\u{1F30F} 글로벌 아키비스트", "모든 지역의 기록 유산을 완료했습니다! 당신은 진정한 기록 수호자입니다.");
+      spawnConfetti();
+    }, 1500);
+  }
+}
+
+// === INIT ===
+document.getElementById("codeInput").addEventListener("keydown", e=>{
+  if(e.key==="Enter") tryLogin();
+});
+
+loadState();
+state._lastLevel = getLevel();
+if(state.loggedIn){
+  showCategories();
+} else {
+  document.getElementById("login").classList.remove("hidden");
+}
+</script>
+</body>
+</html>
